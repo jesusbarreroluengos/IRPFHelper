@@ -1,0 +1,216 @@
+<div *ngIf="isVisible" class="modal-overlay" (click)="cerrarModal()">
+  <div
+    class="modal-container"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ascendientesModalTitle"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header del modal -->
+    <div class="modal-header">
+      <h2 id="ascendientesModalTitle">Gestión de Ascendientes</h2>
+      <button class="close-button" (click)="cerrarModal()" title="Cerrar" aria-label="Cerrar">
+        <span class="btn-icon" aria-hidden="true">×</span>
+      </button>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="modal-content">
+      <!-- Información sobre ascendientes -->
+      <div class="info-section">
+        <div class="info-box">
+          <h3>Información importante</h3>
+          <p class="info-text">
+            Solo se incluirán los ascendientes mayores de 65 años (o menores de dicha edad si son discapacitados) 
+            que conviven con Vd. durante, al menos, la mitad del año y que no tienen rentas anuales superiores a 8.000 euros.
+          </p>
+        </div>
+      </div>
+
+      <!-- Gestión de ascendientes -->
+      <div class="form-section">
+
+        <!-- Nueva sección de gestión de ascendientes -->
+        <div class="ascendientes-section">
+          <!-- Formulario de alta -->
+          <div class="form-section-new">
+            <h4>Agregar nuevo ascendiente</h4>
+            <form #ascendienteForm="ngForm" (ngSubmit)="crearAscendiente()" novalidate>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="anioNac">Año de nacimiento *</label>
+                  <select
+                    id="anioNac"
+                    name="anioNac"
+                    [(ngModel)]="formularioAscendiente.anioNac"
+                    class="form-control"
+                    title="Seleccionar año de nacimiento"
+                    required
+                  >
+                    <option value="">Seleccionar año</option>
+                    <option *ngFor="let anio of aniosNacimiento" [value]="anio">
+                      {{ anio }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="discapacidad">Discapacidad *</label>
+                  <select
+                    id="discapacidad"
+                    name="discapacidad"
+                    [(ngModel)]="formularioAscendiente.codDiscapacidad"
+                    class="form-control"
+                    title="Seleccionar discapacidad"
+                    required
+                  >
+                    <option *ngFor="let disc of discapacidades" [value]="disc.codDiscapacidad">
+                      {{ disc.descDiscapacidad }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="indCompartido">Compartido</label>
+                  <select
+                    id="indCompartido"
+                    name="indCompartido"
+                    [(ngModel)]="formularioAscendiente.indCompartido"
+                    class="form-control"
+                    title="Seleccionar Compartido por "
+                    required
+                  >
+                    <option value="">Seleccionar Compartido</option>
+                    <option *ngFor="let nHijos of hijosCompartido" [value]="nHijos">
+                      {{ nHijos }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field action-field">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-add"
+                    [disabled]="cargando || !ascendienteForm.form.valid"
+                    title="Crear ascendiente"
+                  >
+                    <span class="btn-icon">+</span>
+                    Agregar
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Lista de ascendientes existentes -->
+          <div class="ascendientes-list-section">
+            <h4>Ascendientes registrados</h4>
+            
+            <div *ngIf="ascendientes.length === 0" class="no-data-message">
+              <p>No hay ascendientes registrados</p>
+            </div>
+
+            <div *ngIf="ascendientes.length > 0" class="ascendientes-table-container">
+              <table class="ascendientes-table-new">
+                <thead>
+                  <tr>
+                    <th class="col-anio-nac">Año nac.</th>
+                    <th class="col-edad">Edad</th>
+                    <th class="col-discapacidad">Discapacidad</th>
+                    <th class="col-compartido">Compartido</th>
+                    <th class="col-acciones">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let ascendiente of ascendientes; let i = index" class="ascendiente-row">
+                    <td class="col-anio-nac">
+                      <select
+                        name="anioNac_{{ i }}"
+                        [(ngModel)]="ascendiente.anioNac"
+                        class="form-control table-select"
+                        title="Año de nacimiento"
+                        (ngModelChange)="actualizarAscendiente(ascendiente)"
+                      >
+                        <option value="">Seleccionar</option>
+                        <option *ngFor="let anio of aniosNacimiento" [value]="anio">
+                          {{ anio }}
+                        </option>
+                      </select>
+                    </td>
+
+                    <td class="col-edad">
+                      <span class="edad-display">{{ calcularEdad(ascendiente.anioNac) }} años</span>
+                    </td>
+
+                    <td class="col-discapacidad">
+                      <select
+                        name="discapacidad_{{ i }}"
+                        [(ngModel)]="ascendiente.codDiscapacidad"
+                        class="form-control table-select"
+                        title="Discapacidad"
+                        (change)="actualizarAscendiente(ascendiente)"
+                      >
+                        <option *ngFor="let disc of discapacidades" [value]="disc.codDiscapacidad">
+                          {{ disc.descDiscapacidad }}
+                        </option>
+                      </select>
+                    </td>
+
+                    <td class="col-compartido">
+                      <select
+                        name="indCompartido_{{ i }}"
+                        [(ngModel)]="ascendiente.indCompartido"
+                        class="form-control table-select"
+                        title="Nº Hijos compartido"
+                        (ngModelChange)="actualizarAscendiente(ascendiente)"
+                      >
+                        <option value="">Seleccionar</option>
+                        <option *ngFor="let nHijos of hijosCompartido" [value]="nHijos">
+                          {{ nHijos }}
+                        </option>
+                      </select>
+                    </td>
+                    
+                    <td class="col-acciones">
+                      <button
+                        type="button"
+                        class="btn btn-danger btn-delete"
+                        (click)="eliminarAscendiente(ascendiente)"
+                        title="Eliminar ascendiente"
+                      >
+                        <span class="btn-icon">🗑</span>
+                        <span class="btn-text">Eliminar</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de estado -->
+      <div
+        *ngIf="mostrarMensaje"
+        class="message-container"
+        [class.message-success]="mensaje.includes('exitosamente')"
+        [class.message-error]="!mensaje.includes('exitosamente')"
+        role="status"
+      >
+        <span class="message-text">{{ mensaje }}</span>
+        <button class="message-close" (click)="cerrarMensaje()" title="Cerrar mensaje" aria-label="Cerrar mensaje">
+          <span class="btn-icon" aria-hidden="true">×</span>
+        </button>
+      </div>
+
+      <!-- Botón de cerrar -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          <span class="btn-icon" aria-hidden="true">×</span>
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

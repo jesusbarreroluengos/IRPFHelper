@@ -1,0 +1,104 @@
+<div class="main-container">
+  <!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button
+          type="button"
+          class="menu-button"
+          [class.active]="item.route === '/administracion'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="user-area" *ngIf="currentUsername">
+      <div class="persona-info">
+        <span class="persona-icon">&#128100;</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="change-password-btn"
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contrase&ntilde;a">
+          <span class="btn-icon">&#128274;</span>
+          <span class="btn-text">Cambiar Contrase&ntilde;a</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button
+          type="button"
+          class="menu-button active"
+          (click)="navigateTo('/administracion')"
+          title="Administraci&oacute;n">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administraci&oacute;n</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="menu-button"
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerrar sesi&oacute;n">
+          <span class="menu-icon">&#9203;</span>
+          <span class="menu-text">Cerrar Sesi&oacute;n</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content">
+    <div class="content-header" style="text-align: center;">
+      <h1>Administraci&oacute;n</h1>
+      <p>Selecciona la tabla que deseas administrar</p>
+    </div>
+
+    <div class="content-body">
+      <div class="admin-grid">
+        <button
+          *ngFor="let opcion of opciones"
+          type="button"
+          class="admin-card"
+          (click)="navigateTo(opcion.ruta)">
+          <span class="admin-card-icon" aria-hidden="true">{{ opcion.icono }}</span>
+          <h3 class="admin-card-titulo">{{ opcion.titulo }}</h3>
+          <p class="admin-card-desc">{{ opcion.descripcion }}</p>
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

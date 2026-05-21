@@ -1,0 +1,181 @@
+﻿<div class="main-container">
+  <!-- Menu lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button
+          type="button"
+          class="menu-button"
+          [class.active]="item.route === '/principal'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="user-area" *ngIf="currentUsername">
+      <div class="persona-info">
+        <span class="persona-icon">&#128100;</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="change-password-btn"
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contrase&ntilde;a">
+          <span class="btn-icon">&#128274;</span>
+          <span class="btn-text">Cambiar Contrase&ntilde;a</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button
+          type="button"
+          class="menu-button"
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="menu-button"
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerrar sesi&oacute;n">
+          <span class="menu-icon">&#9203;</span>
+          <span class="menu-text">Cerrar Sesi&oacute;n</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content principal-main-content">
+    <!-- Mensaje de exito -->
+    <div *ngIf="showSuccessMessage" class="success-message">
+      <div class="success-content">
+        <span class="success-icon">&#9989;</span>
+        <span class="success-text">{{ successMessage }}</span>
+        <button type="button" class="close-btn" (click)="showSuccessMessage = false">&times;</button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <h1>Bienvenido a IRPF Helper</h1>
+      <p>Simula tus retribuciones y retenciones de IRPF de forma sencilla</p>
+    </div>
+
+    <div class="content-body principal-content-body">
+      <div class="welcome-card principal-welcome-card">
+        <h3>&iquest;Qu&eacute; pasos tienes que dar para simular tu IRPF?</h3>
+
+        <div class="principal-steps-grid">
+          <button
+            type="button"
+            class="principal-step-card"
+            [class.disabled]="!isPasoActivo(1)"
+            [disabled]="!isPasoActivo(1)"
+            (click)="navigateTo('/datos-personales')">
+            <span class="principal-step-badge" [class.completed]="paso1Completado" [class.pending]="!paso1Completado">
+              {{ paso1Completado ? '\u2714' : '\u2716' }}
+            </span>
+            <span class="principal-step-icon" aria-hidden="true">&#128100;</span>
+            <h4>Paso 1</h4>
+            <h5>Docentes Simulados</h5>
+            <p class="principal-step-description">Define los docentes simulados y sus datos personales.</p>
+            <p class="principal-step-status-message" [class.completed]="paso1Completado" [class.pending]="!paso1Completado">
+              {{ paso1Completado ? paso1MensajeOk : paso1MensajeKo }}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            class="principal-step-card"
+            [class.disabled]="!isPasoActivo(2)"
+            [disabled]="!isPasoActivo(2)"
+            (click)="navigateTo('/puestos-tipo')">
+            <span class="principal-step-badge" [class.completed]="paso2Completado" [class.pending]="!paso2Completado">
+              {{ paso2Completado ? '\u2714' : '\u2716' }}
+            </span>
+            <span class="principal-step-icon" aria-hidden="true">&#129489;&#8205;&#127979;</span>
+            <h4>Paso 2</h4>
+            <h5>Puestos Tipo</h5>
+            <p class="principal-step-description">Configura caracter&iacute;sticas del puesto para cada identidad.</p>
+            <p class="principal-step-status-message" [class.completed]="paso2Completado" [class.pending]="!paso2Completado">
+              {{ paso2Completado ? paso2MensajeOk : paso2MensajeKo }}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            class="principal-step-card"
+            [class.disabled]="!isPasoActivo(3)"
+            [disabled]="!isPasoActivo(3)"
+            (click)="navigateTo('/contratos')">
+            <span class="principal-step-badge" [class.completed]="paso3Completado" [class.pending]="!paso3Completado">
+              {{ paso3Completado ? '\u2714' : '\u2716' }}
+            </span>
+            <span class="principal-step-icon" aria-hidden="true">&#128196;</span>
+            <h4>Paso 3</h4>
+            <h5>Contratos</h5>
+            <p class="principal-step-description">Indica periodos y condiciones de los contratos del ejercicio.</p>
+            <p class="principal-step-status-message" [class.completed]="paso3Completado" [class.pending]="!paso3Completado">
+              {{ paso3Completado ? paso3MensajeOk : paso3MensajeKo }}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            class="principal-step-card"
+            [class.disabled]="!isPasoActivo(4)"
+            [disabled]="!isPasoActivo(4)"
+            (click)="navigateTo('/simulacion')">
+            <span class="principal-step-badge" [class.completed]="paso4Disponible" [class.pending]="!paso4Disponible">
+              {{ paso4Disponible ? 'OK' : '\u2716' }}
+            </span>
+            <span class="principal-step-icon" aria-hidden="true">&#128176;</span>
+            <h4>Paso 4</h4>
+            <h5>Simulaci&oacute;n IRPF</h5>
+            <p class="principal-step-description">Ejecuta la simulaci&oacute;n y consulta importes y porcentaje estimado.</p>
+            <p class="principal-step-status-message" [class.completed]="paso4Disponible" [class.pending]="!paso4Disponible">
+              {{ paso4Disponible ? paso4MensajeOk : paso4MensajeKo }}
+            </p>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+

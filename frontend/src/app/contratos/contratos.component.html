@@ -1,0 +1,279 @@
+﻿<div class="main-container">
+<!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button 
+          class="menu-button" 
+          [class.active]="item.route === '/contratos'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="user-area" *ngIf="currentUsername">
+
+      <div class="persona-info">
+        <span class="persona-icon">👤</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+
+      <div class="user-actions">
+        <button 
+          class="change-password-btn" 
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contraseña">
+          <span class="btn-icon">🔒</span>
+          <span class="btn-text">Cambiar Contraseña</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button 
+          class="menu-button" 
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button 
+          class="menu-button" 
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerar Sesión">
+          <span class="menu-icon">⏻</span>
+          <span class="menu-text">Cerrar Sesión</span>
+        </button>
+      </div>
+
+      
+
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content centered-header-main form-layout-header-main contratos-header-main">
+    <div *ngIf="mostrarMensaje" class="message" [class.success-message]="tipoMensaje === 'success'" [class.error-message]="tipoMensaje === 'error'">
+      <div class="message-content">
+        <span class="message-icon">{{ tipoMensaje === 'success' ? '✅' : '❌' }}</span>
+        <span class="message-text">{{ mensaje }}</span>
+        <button class="close-btn" (click)="cerrarMensaje()">×</button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <h1>Contratos de la persona simulada</h1>
+      <p *ngIf="personaSeleccionada">Gestiona los contratos de {{ personaSeleccionada.nombre }}</p>
+    </div>
+
+    <div class="content-body wide-form-content-body">
+      <ng-container *ngIf="personaSeleccionada; else sinPersona">
+        <div class="content-with-help">
+          <div class="content-with-help-main">
+            <ng-container *ngIf="tienePuestos(); else sinPuestos">
+              <section *ngIf="vista === 'lista'">
+                <div class="persona-controls">
+                  <button class="btn btn-primary" (click)="abrirCrear()" [disabled]="cargando">
+                <span class="btn-icon">➕</span>
+                    Crear Contrato
+                  </button>
+                </div>
+
+                <div *ngIf="contratos.length > 0; else sinContratos">
+                  <div class="table-container">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Puesto tipo</th>
+                          <th>Fecha desde</th>
+                          <th>Fecha hasta</th>
+                          <th>Vac. no disfrutadas</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let contrato of contratos">
+                          <td>{{ getNombrePuesto(contrato.idPuestoTipo) }}</td>
+                          <td>{{ formatearFecha(contrato.fechaDesde) }}</td>
+                          <td>{{ contrato.fechaHasta ? formatearFecha(contrato.fechaHasta) : '-' }}</td>
+                          <td>
+                            <input
+                              type="checkbox"
+                              aria-label="Vacaciones no disfrutadas"
+                              [checked]="(contrato.indVacNoDisfrutadas || '').toUpperCase() === 'S'"
+                              disabled>
+                          </td>
+                          <td>
+                            <button class="btn btn-secondary" (click)="abrirEdicion(contrato)" [disabled]="cargando">
+                              <span class="btn-icon">✏️</span>
+                              Modificar
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <ng-template #sinContratos>
+                  <div class="no-data">
+                    <p>No hay contratos registrados para esta persona.</p>
+                  </div>
+                </ng-template>
+              </section>
+
+              <section *ngIf="vista === 'form'">
+                <div class="form-container" *ngIf="!cargando; else cargandoTpl">
+                  <form (ngSubmit)="guardar()">
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="puestoSelect">Puesto tipo *</label>
+                        <select
+                          id="puestoSelect"
+                          name="puestoSelect"
+                          class="form-select"
+                          [(ngModel)]="formulario.idPuestoTipo"
+                          (focus)="setAyudaActiva('puestoTipo')"
+                          (blur)="restablecerAyudaGeneral()"
+                          required
+                          [title]="'Puesto tipo del contrato que se desarrolla en las fechas indicadas'">
+                          <option *ngFor="let p of puestos" [ngValue]="p.idPuestoTipo">{{ p.nomPuesto }}</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="fechaDesde">Fecha desde *</label>
+                        <input
+                          id="fechaDesde"
+                          name="fechaDesde"
+                          type="date"
+                          class="form-input"
+                          [(ngModel)]="formulario.fechaDesde"
+                          (focus)="setAyudaActiva('fechaDesde')"
+                          (blur)="restablecerAyudaGeneral()"
+                          placeholder="DD/MM/YYYY"
+                          required>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="fechaHasta">Fecha hasta</label>
+                        <input
+                          id="fechaHasta"
+                          name="fechaHasta"
+                          type="date"
+                          class="form-input"
+                          [(ngModel)]="formulario.fechaHasta"
+                          (focus)="setAyudaActiva('fechaHasta')"
+                          (blur)="restablecerAyudaGeneral()"
+                          placeholder="DD/MM/YYYY"
+                          [title]="'Fecha hasta de contrato. Si se deja en blanco, quiere decir que el contrato sigue vigente desde la fecha desde en adelante'">
+                      </div>
+
+                      <div class="form-group checkbox-group">
+                        <label class="checkbox-label" title="Indica si se deben calcular vacaciones no disfrutadas al finalizar el contrato">
+                          <input
+                            type="checkbox"
+                            class="form-checkbox"
+                            name="indVacNoDisfrutadas"
+                            [(ngModel)]="formulario.indVacNoDisfrutadas"
+                            (focus)="setAyudaActiva('vacacionesNoDisfrutadas')"
+                            (blur)="restablecerAyudaGeneral()">
+                          <span class="checkbox-text">Calcular vacaciones no disfrutadas</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-success" [disabled]="cargando">
+                    <span class="btn-icon">💾</span>
+                        {{ modoAlta ? 'Crear Contrato' : 'Modificar' }}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        *ngIf="!modoAlta"
+                        (click)="eliminar()"
+                        [disabled]="cargando">
+                    <span class="btn-icon">🗑️</span>
+                        Eliminar
+                      </button>
+                      <button type="button" class="btn btn-secondary" (click)="volverALista()" [disabled]="cargando">
+                    <span class="btn-icon">↩️</span>
+                        Volver
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                <ng-template #cargandoTpl>
+                  <div class="loading-indicator">
+                    <div class="spinner"></div>
+                    <p>Cargando...</p>
+                  </div>
+                </ng-template>
+              </section>
+            </ng-container>
+          </div>
+
+          <aside class="help-panel">
+            <h3 class="help-panel-title">{{ ayudaActiva.titulo }}</h3>
+            <p class="help-panel-text">{{ ayudaActiva.descripcion }}</p>
+            <ul class="help-panel-list" *ngIf="ayudaActiva.puntos?.length">
+              <li *ngFor="let punto of ayudaActiva.puntos">{{ punto }}</li>
+            </ul>
+          </aside>
+        </div>
+      </ng-container>
+    </div>
+
+    <ng-template #sinPersona>
+      <div class="no-data">
+        <p>{{ mensajeSinPersona }}</p>
+        <button class="btn btn-primary" (click)="navigateTo('/datos-personales')">
+          Crear persona simulada
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template #sinPuestos>
+      <div class="no-data">
+        <p>{{ mensajeSinPuestos }}</p>
+        <button class="btn btn-primary" (click)="navigateTo('/puestos-tipo')">
+          Ir a puestos tipo
+        </button>
+      </div>
+    </ng-template>
+  </main>
+</div>
+
+
+
+

@@ -1,0 +1,429 @@
+﻿<div class="main-container">
+<!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button 
+          class="menu-button" 
+          [class.active]="item.route === '/puestos-tipo'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="user-area" *ngIf="currentUsername">
+
+      <div class="persona-info">
+        <span class="persona-icon">👤</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+
+      <div class="user-actions">
+        <button 
+          class="change-password-btn" 
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contraseña">
+          <span class="btn-icon">🔒</span>
+          <span class="btn-text">Cambiar Contraseña</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button 
+          class="menu-button" 
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button 
+          class="menu-button" 
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerar Sesión">
+          <span class="menu-icon">⏻</span>
+          <span class="menu-text">Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- Contenido principal -->
+  <main class="main-content centered-header-main form-layout-header-main puestos-header-main">
+    <div *ngIf="mostrarMensaje" class="message" [class.success-message]="tipoMensaje === 'success'" [class.error-message]="tipoMensaje === 'error'">
+      <div class="message-content">
+        <span class="message-icon">{{ tipoMensaje === 'success' ? '✅' : '❌' }}</span>
+        <span class="message-text">{{ mensaje }}</span>
+        <button class="close-btn" (click)="cerrarMensaje()">×</button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <h1>Puestos Tipo</h1>
+      <p>Gestiona los Puestos tipo asociados al docente simulado seleccionado</p>
+    </div>
+
+    <div class="content-body wide-form-content-body" *ngIf="personaSeleccionada; else sinPersona">
+      <div class="content-with-help">
+      <div class="content-with-help-main">
+      <!-- Selector de puestos -->
+      <div class="persona-controls">
+        <div class="persona-selector-inline" *ngIf="puestos.length > 0">
+          <label for="puestoSelect">Puesto tipo:</label>
+          <select 
+            id="puestoSelect" 
+            class="form-select"
+            [(ngModel)]="puestoSeleccionadoId"
+            (change)="puestoSeleccionadoId ? seleccionarPuesto(puestoSeleccionadoId) : null"
+            (focus)="setAyudaActiva('puestoSeleccionado')"
+            (blur)="restablecerAyudaGeneral()">
+            <option *ngFor="let p of puestos" [ngValue]="p.idPuestoTipo">{{ p.nomPuesto }}</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" (click)="nuevoPuesto()" [disabled]="cargando">
+          <span class="btn-icon">➕</span>
+          Nuevo puesto tipo
+        </button>
+      </div>
+
+      <div class="form-container" *ngIf="!cargando">
+        <form (ngSubmit)="guardar()" #puestoForm="ngForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nomPuesto">Nombre del puesto *</label>
+              <input 
+                id="nomPuesto"
+                name="nomPuesto"
+                class="form-input"
+                type="text"
+                required
+                minlength="1"
+                maxlength="45"
+                [title]="'Nombre con el que identificará el puesto'"
+                [(ngModel)]="formulario.nomPuesto"
+                (focus)="setAyudaActiva('nomPuesto')"
+                (blur)="restablecerAyudaGeneral()"
+                (ngModelChange)="onNombreChange()">
+            </div>
+
+            <div class="form-group">
+              <label for="idComunidad">Comunidad Aut&oacute;noma *</label>
+              <select
+                id="idComunidad"
+                name="idComunidad"
+                class="form-select"
+                [(ngModel)]="formulario.idComunidad"
+                (change)="onCambioComunidad()"
+                (focus)="setAyudaActiva('idComunidad')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+                <option [ngValue]="undefined">Seleccione una comunidad</option>
+                <option *ngFor="let comunidad of comunidades" [ngValue]="comunidad.idComunidad">
+                  {{ comunidad.descComunidad }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="codEstudio">Tipo de docencia *</label>
+              <select 
+                id="codEstudio"
+                name="codEstudio"
+                class="form-select"
+                [(ngModel)]="formulario.codEstudio"
+                (change)="onCambioCodEstudio()"
+                (focus)="setAyudaActiva('codEstudio')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Indica si el puesto es de un docente de Primaria, Secundaria, Catedráticos o Formación Profesional'">
+                <option *ngFor="let e of estudios" [value]="e.codEstudio">
+                  {{ e.descEstudio }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="numTrieniosA1">Nº Trienios A1 (Sec)</label>
+              <select 
+                id="numTrieniosA1"
+                name="numTrieniosA1"
+                class="form-select"
+                [(ngModel)]="formulario.numTrieniosA1"
+                (change)="recalcularImportesDetalle()"
+                (focus)="setAyudaActiva('numTrieniosA1')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Número de trienios acumulados en el grupo A1 (Secundaria)'">
+                <option *ngFor="let t of trienios" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="numTrieniosA2">Nº Trienios A2 (Prim)</label>
+              <select 
+                id="numTrieniosA2"
+                name="numTrieniosA2"
+                class="form-select"
+                [(ngModel)]="formulario.numTrieniosA2"
+                (change)="recalcularImportesDetalle()"
+                (focus)="setAyudaActiva('numTrieniosA2')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Número de trienios acumulador en el grupo A2 (Primaria)'">
+                <option *ngFor="let t of trienios" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="numSexenios">Nº Sexenios</label>
+              <select 
+                id="numSexenios"
+                name="numSexenios"
+                class="form-select"
+                [(ngModel)]="formulario.numSexenios"
+                (change)="recalcularImportesDetalle()"
+                (focus)="setAyudaActiva('numSexenios')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Número de sexenios'">
+                <option *ngFor="let s of sexenios" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="importeEspecDocente">Importe Específico General Docente</label>
+              <input 
+                id="importeEspecDocente"
+                name="importeEspecDocente"
+                class="form-input"
+                type="number"
+                min="0"
+                max="25000"
+                step="0.01"
+                [(ngModel)]="formulario.importeEspecDocente"
+                (change)="recalcularImportesDetalle()"
+                (focus)="setAyudaActiva('importeEspecDocente')"
+                (blur)="restablecerAyudaGeneral()"
+                placeholder="Dejar en blanco si coincide con tabla"
+                [title]="'Importe del específico general docente si no coincide con el que se presenta a la derecha'">
+              <div class="especifico-tabla">
+                Importe tabla (año actual): 
+                <strong>{{ importeEspecificoTabla !== null ? (importeEspecificoTabla | number:'1.2-2') : '-' }}</strong>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="importeOtrosAbonosMes">Otros importes mensuales</label>
+              <input 
+                id="importeOtrosAbonosMes"
+                name="importeOtrosAbonosMes"
+                class="form-input"
+                type="number"
+                min="0"
+                max="25000"
+                step="0.01"
+                [(ngModel)]="formulario.importeOtrosAbonosMes"
+                (change)="recalcularImportesDetalle()"
+                (focus)="setAyudaActiva('importeOtrosAbonosMes')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Dentro de este campo incluiremos sumados los importes que se cobren de forma mensual en abonos que no sean Sueldo, trienios, complemento destino, complemento específico general docente, complemento de formación permanente (sexenios) paga extra y liquidación'">
+            </div>
+
+            <div class="form-group">
+              <label for="codJornada">Jornada *</label>
+              <select
+                id="codJornada"
+                name="codJornada"
+                class="form-select"
+                [(ngModel)]="formulario.codJornada"
+                (change)="onCambioJornada()"
+                (focus)="setAyudaActiva('codJornada')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Seleccione la jornada laboral'">
+                <option *ngFor="let j of jornadas" [value]="j.codJornada">
+                  {{ j.descJornada }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="importes-calculados-panel">
+            <h4 class="importes-calculados-titulo">Importes calculados en función de los datos introducidos</h4>
+
+          <div class="form-group form-group-inline">
+            <div>
+              <label>Importe Sueldo</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeSueldo | number:'1.2-2'"
+                disabled
+                title="Importe de sueldo reducido por jornada"
+              />
+            </div>
+
+            <div>
+              <label>Importe Complemento Destino</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeComplementoDestino | number:'1.2-2'"
+                disabled
+                title="Importe de complemento de destino reducido por jornada"
+              />
+            </div>
+
+            <div>
+              <label>Importe Trienios</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeTrienios | number:'1.2-2'"
+                disabled
+                title="Importe de trienios reducido por jornada"
+              />
+            </div>
+          </div>
+
+          <div class="form-group form-group-inline">
+            <div>
+              <label>Importe Sexenios</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeSexenios | number:'1.2-2'"
+                disabled
+                title="Importe de sexenios reducido por jornada"
+              />
+            </div>
+
+            <div>
+              <label>Importe Sueldo Extra</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeSueldoExtra | number:'1.2-2'"
+                disabled
+                title="Importe de sueldo para paga extra reducido por jornada"
+              />
+            </div>
+
+            <div>
+              <label>Importe Trienios Extra</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeTrieniosExtra | number:'1.2-2'"
+                disabled
+                title="Importe de trienios para paga extra reducido por jornada"
+              />
+            </div>
+          </div>
+
+          <div class="form-group form-group-inline">
+            <div>
+              <label>Importe bruto Mes</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeBrutoMes | number:'1.2-2'"
+                disabled
+                title="Importe bruto mensual calculado"
+              />
+            </div>
+
+            <div>
+              <label>Importe Paga Extra</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeExtra | number:'1.2-2'"
+                disabled
+                title="Importe de la paga extra calculada"
+              />
+            </div>
+
+            <div>
+              <label>Base Cotización</label>
+              <input
+                class="form-input"
+                type="text"
+                [value]="importesDetalle.importeBaseCotizacion | number:'1.2-2'"
+                disabled
+                title="Base de cotización calculada"
+              />
+            </div>
+          </div>
+
+          </div><!-- fin importes-calculados-panel -->
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success" [disabled]="cargando">
+              <span class="btn-icon">💾</span>
+              {{ modoAlta ? 'Crear Puesto Tipo' : 'Modificar' }}
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-danger"
+              *ngIf="!modoAlta"
+              (click)="eliminar()"
+              [disabled]="cargando">
+              <span class="btn-icon">🗑️</span>
+              Eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="cargando" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+      </div>
+
+      <aside class="help-panel">
+        <h3 class="help-panel-title">{{ ayudaActiva.titulo }}</h3>
+        <p class="help-panel-text">{{ ayudaActiva.descripcion }}</p>
+        <ul class="help-panel-list" *ngIf="ayudaActiva.puntos?.length">
+          <li *ngFor="let punto of ayudaActiva.puntos">{{ punto }}</li>
+        </ul>
+      </aside>
+      </div>
+    </div>
+
+    <ng-template #sinPersona>
+      <div class="no-data">
+        <p>Seleccione o cree una identidad simulada para gestionar sus puestos tipo.</p>
+        <button class="btn btn-primary" (click)="navigateTo('/datos-personales')">
+          Ir a Docentes Simulados
+        </button>
+      </div>
+    </ng-template>
+  </main>
+</div>
+

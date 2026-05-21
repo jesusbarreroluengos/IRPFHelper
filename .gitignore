@@ -1,0 +1,13 @@
+node_modules/.package-lock.json
+node_modules/baseline-browser-mapping/package.json
+node_modules/baseline-browser-mapping/dist/index.cjs
+node_modules/baseline-browser-mapping/dist/index.js
+node_modules/.package-lock.json
+node_modules/baseline-browser-mapping/package.json
+node_modules/baseline-browser-mapping/dist/index.cjs
+node_modules/baseline-browser-mapping/dist/index.js
+backend/src/main/resources/static
+backend/logs/
+logs/
+docs/
+backend/src/main/resources/static/index.html

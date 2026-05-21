@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_DIR">C:/logs</Property>
+        <Property name="LOG_FILE">${LOG_DIR}/backend.log</Property>
+        <Property name="FRONTEND_LOG_FILE">${LOG_DIR}/frontend-actions.log</Property>
+        <Property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${PATTERN}" />
+        </Console>
+
+        <RollingFile name="File"
+                     fileName="${LOG_FILE}"
+                     filePattern="${LOG_DIR}/backend-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="14" />
+        </RollingFile>
+
+        <RollingFile name="FrontendFile"
+                     fileName="${FRONTEND_LOG_FILE}"
+                     filePattern="${LOG_DIR}/frontend-actions-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="14" />
+        </RollingFile>
+
+        <RollingFile name="AuditFile"
+                     fileName="${LOG_DIR}/backend-audit.log"
+                     filePattern="${LOG_DIR}/backend-audit-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${PATTERN}" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="30" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="FRONTEND_AUDIT" level="INFO" additivity="false">
+            <AppenderRef ref="FrontendFile" />
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="BACKEND_AUDIT" level="INFO" additivity="false">
+            <AppenderRef ref="AuditFile" />
+            <AppenderRef ref="Console" />
+        </Logger>
+
+        <Logger name="org.springframework.security" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="File" />
+        </Logger>
+
+        <Root level="INFO">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="File" />
+        </Root>
+    </Loggers>
+</Configuration>

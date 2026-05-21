@@ -1,0 +1,306 @@
+/* Estilos para el componente de descendientes modal */
+
+/* Sección principal de descendientes */
+.descendientes-section {
+  margin-top: 20px;
+}
+
+/* Formulario de alta */
+.form-section-new {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.form-section-new h4 {
+  margin: 0 0 20px 0;
+  color: #495057;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Grid del formulario */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 120px 1fr 140px;
+  gap: 15px;
+  align-items: end;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9em;
+  background-color: #fff;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Campo de checkbox */
+.checkbox-field {
+  justify-content: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.form-checkbox {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.checkbox-text {
+  font-size: 0.9em;
+  color: #495057;
+}
+
+/* Campo de acción */
+.action-field {
+  justify-content: center;
+}
+
+.btn-add {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.btn-add:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn-add:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  opacity: 0.65;
+}
+
+.btn-icon {
+  font-size: 1em;
+}
+
+/* Sección de lista de descendientes */
+.descendientes-list-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Mensaje cuando no hay datos */
+.no-data-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+.no-data-message p {
+  margin: 0;
+  font-size: 1em;
+}
+
+/* Contenedor de la tabla */
+.descendientes-table-container {
+  overflow-x: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Tabla de descendientes */
+.descendientes-table-new {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 800px;
+}
+
+/* Encabezados de la tabla */
+.descendientes-table-new thead {
+  background-color: #e9ecef;
+}
+
+.descendientes-table-new th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9em;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  vertical-align: middle;
+}
+
+/* Anchos fijos para cada columna */
+.col-anio-nac {
+  width: 15%;
+}
+
+.col-anio-adop {
+  width: 15%;
+}
+
+.col-por-entero {
+  width: 12%;
+  text-align: center;
+}
+
+.col-discapacidad {
+  width: 38%;
+}
+
+.col-acciones {
+  width: 20%;
+  text-align: center;
+}
+
+/* Filas de datos */
+.descendiente-row {
+  border-bottom: 1px solid #dee2e6;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.descendiente-row:hover {
+  background-color: #f8f9fa;
+}
+
+.descendiente-row td {
+  padding: 10px 8px;
+  vertical-align: middle;
+  border-right: 1px solid #f1f3f4;
+}
+
+.descendiente-row td:last-child {
+  border-right: none;
+}
+
+/* Controles de formulario en la tabla */
+.table-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.85em;
+  background-color: #fff;
+}
+
+.table-select:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Contenedor de checkbox en tabla */
+.checkbox-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.table-checkbox {
+  transform: scale(1.1);
+}
+
+/* Botón de eliminar */
+.btn-delete {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-text {
+  font-size: 0.8em;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .descendientes-table-container {
+    font-size: 0.8em;
+  }
+  
+  .descendientes-table-new {
+    min-width: 600px;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .btn-add {
+    justify-content: center;
+  }
+}
+
+/* Estados de carga */
+.form-control:disabled,
+.table-select:disabled {
+  background-color: #e9ecef;
+  opacity: 0.65;
+}
+
+/* Mejoras de accesibilidad */
+.form-control:focus,
+.table-select:focus {
+  outline: 2px solid #80bdff;
+  outline-offset: 2px;
+}
+
+.checkbox-label:focus-within {
+  outline: 2px solid #80bdff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

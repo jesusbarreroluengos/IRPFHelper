@@ -1,0 +1,226 @@
+<div *ngIf="isVisible" class="modal-overlay" (click)="cerrarModal()">
+  <div
+    class="modal-container"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="descendientesModalTitle"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 id="descendientesModalTitle">Gestión de Descendientes</h2>
+      <button class="close-button" (click)="cerrarModal()" title="Cerrar" aria-label="Cerrar">
+        <span class="btn-icon" aria-hidden="true">×</span>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="form-section">
+        <p class="form-info">
+          <span class="info-text">El año de nacimiento es obligatorio. El año de adopción es opcional, pero si se informa debe ser mayor o igual al año de nacimiento.</span>
+        </p>
+
+        <div class="descendientes-section">
+          <div class="form-section-new">
+            <h4>Agregar nuevo descendiente</h4>
+            <form #descendienteForm="ngForm" (ngSubmit)="crearDescendiente()" novalidate>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="anioNac">Año de nacimiento *</label>
+                  <select
+                    id="anioNac"
+                    name="anioNac"
+                    [(ngModel)]="formularioDescendiente.anioNac"
+                    (ngModelChange)="onAnioNacimientoChange()"
+                    class="form-control"
+                    title="Seleccionar año de nacimiento"
+                    required
+                  >
+                    <option value=""></option>
+                    <option *ngFor="let anio of aniosNacimiento" [value]="anio">
+                      {{ anio }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="anioAdopcion">Año de adopción</label>
+                  <select
+                    id="anioAdopcion"
+                    name="anioAdopcion"
+                    [(ngModel)]="formularioDescendiente.anioAdopcion"
+                    (ngModelChange)="onAnioAdopcionChange()"
+                    class="form-control"
+                    title="Seleccionar año de adopción"
+                  >
+                    <option value=""></option>
+                    <option *ngFor="let anio of aniosAdopcion" [value]="anio">
+                      {{ anio }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field checkbox-field">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="indPorentero"
+                      [ngModel]="formularioDescendiente.indPorentero === 'S'"
+                      (ngModelChange)="formularioDescendiente.indPorentero = $event ? 'S' : 'N'"
+                      class="form-checkbox"
+                      title="Marcar si es por entero"
+                    />
+                    <span class="checkbox-text">Por entero</span>
+                  </label>
+                </div>
+
+                <div class="form-field">
+                  <label for="discapacidad">Discapacidad</label>
+                  <select
+                    id="discapacidad"
+                    name="discapacidad"
+                    [(ngModel)]="formularioDescendiente.codDiscapacidad"
+                    class="form-control"
+                    title="Seleccionar discapacidad"
+                    required
+                  >
+                    <option value="">Seleccionar discapacidad</option>
+                    <option *ngFor="let disc of discapacidades" [value]="disc.codDiscapacidad">
+                      {{ disc.descDiscapacidad }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-field action-field">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-add"
+                    [disabled]="cargando || !descendienteForm.form.valid || !puedeGuardarFormulario()"
+                    [title]="formularioDescendiente.idDescendiente ? 'Actualizar descendiente' : 'Crear descendiente'"
+                  >
+                    <span class="btn-icon">{{ formularioDescendiente.idDescendiente ? '✓' : '+' }}</span>
+                    {{ formularioDescendiente.idDescendiente ? 'Actualizar' : 'Agregar' }}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div
+            *ngIf="mostrarMensaje"
+            class="message-container"
+            [class.message-success]="mensaje.includes('exitosamente')"
+            [class.message-error]="!mensaje.includes('exitosamente')"
+            role="status"
+          >
+            <span class="message-text">{{ mensaje }}</span>
+            <button class="message-close" (click)="cerrarMensaje()" title="Cerrar mensaje" aria-label="Cerrar mensaje">
+              <span class="btn-icon" aria-hidden="true">×</span>
+            </button>
+          </div>
+
+          <div class="descendientes-list-section">
+            <h4>Descendientes registrados</h4>
+
+            <div *ngIf="descendientes.length === 0" class="no-data-message">
+              <p>No hay descendientes registrados</p>
+            </div>
+
+            <div *ngIf="descendientes.length > 0" class="descendientes-table-container">
+              <table class="descendientes-table-new">
+                <thead>
+                  <tr>
+                    <th class="col-anio-nac">Año nac.</th>
+                    <th class="col-anio-adop">Año adop.</th>
+                    <th class="col-por-entero">Por entero</th>
+                    <th class="col-discapacidad">Discapacidad</th>
+                    <th class="col-acciones">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let descendiente of descendientes; let i = index" class="descendiente-row">
+                    <td class="col-anio-nac">
+                      <select
+                        name="anioNac_{{ i }}"
+                        [(ngModel)]="descendiente.anioNac"
+                        class="form-control table-select"
+                        title="Año de nacimiento"
+                        (ngModelChange)="onAnioNacimientoTableChange(descendiente)"
+                        required
+                      >
+                        <option value=""></option>
+                        <option *ngFor="let anio of aniosNacimiento" [value]="anio">
+                          {{ anio }}
+                        </option>
+                      </select>
+                    </td>
+
+                    <td class="col-anio-adop">
+                      <select
+                        name="anioAdopcion_{{ i }}"
+                        [(ngModel)]="descendiente.anioAdopcion"
+                        class="form-control table-select"
+                        title="Año de adopción"
+                        (ngModelChange)="onAnioAdopcionTableChange(descendiente)"
+                      >
+                        <option value=""></option>
+                        <option *ngFor="let anio of aniosAdopcion" [value]="anio">
+                          {{ anio }}
+                        </option>
+                      </select>
+                    </td>
+
+                    <td class="col-por-entero">
+                      <div class="checkbox-container">
+                        <input
+                          type="checkbox"
+                          name="indPorentero_{{ i }}"
+                          [ngModel]="descendiente.indPorentero === 'S'"
+                          (ngModelChange)="descendiente.indPorentero = $event ? 'S' : 'N'; actualizarDescendiente(descendiente)"
+                          class="form-checkbox table-checkbox"
+                          title="Por entero"
+                        />
+                      </div>
+                    </td>
+
+                    <td class="col-discapacidad">
+                      <select
+                        name="discapacidad_{{ i }}"
+                        [(ngModel)]="descendiente.codDiscapacidad"
+                        class="form-control table-select"
+                        title="Discapacidad"
+                        (change)="actualizarDescendiente(descendiente)"
+                      >
+                        <option *ngFor="let disc of discapacidades" [value]="disc.codDiscapacidad">
+                          {{ disc.descDiscapacidad }}
+                        </option>
+                      </select>
+                    </td>
+
+                    <td class="col-acciones">
+                      <button
+                        type="button"
+                        class="btn btn-danger btn-delete"
+                        (click)="eliminarDescendiente(descendiente)"
+                        title="Eliminar descendiente"
+                      >
+                        <span class="btn-icon">🗑</span>
+                        <span class="btn-text">Eliminar</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          <span class="btn-icon" aria-hidden="true">×</span>
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

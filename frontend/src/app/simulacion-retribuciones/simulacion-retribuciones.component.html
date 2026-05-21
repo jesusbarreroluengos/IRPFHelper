@@ -1,0 +1,274 @@
+﻿<div class="main-container">
+
+<!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button 
+          class="menu-button" 
+          [class.active]="item.route === '/simulacion'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="user-area" *ngIf="currentUsername">
+
+      <div class="persona-info">
+        <span class="persona-icon">👤</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+
+      <div class="user-actions">
+        <button 
+          class="change-password-btn" 
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contraseña">
+          <span class="btn-icon">🔒</span>
+          <span class="btn-text">Cambiar Contraseña</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button 
+          class="menu-button" 
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button 
+          class="menu-button" 
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerar Sesión">
+          <span class="menu-icon">⏻</span>
+          <span class="menu-text">Cerrar Sesión</span>
+        </button>
+      </div>
+
+      
+
+    </div>
+  </nav>
+
+  <main class="main-content centered-header-main">
+    <div *ngIf="mostrarMensaje" class="message" [class.success-message]="tipoMensaje === 'success'" [class.error-message]="tipoMensaje === 'error'">
+      <div class="message-content">
+        <span class="message-icon">{{ tipoMensaje === 'success' ? '✅' : '?' }}</span>
+        <span class="message-text">{{ mensaje }}</span>
+        <button class="close-btn" (click)="cerrarMensaje()">×</button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <h1>Simulación de retribuciones e IRPF</h1>
+      <p>Calcula las retribuciones pendientes del ejercicio y el porcentaje de IRPF estimado.</p>
+    </div>
+
+    <div *ngIf="bloqueado" class="no-data">
+      <p>{{ mensajeBloqueo }}</p>
+      <button class="btn btn-primary" (click)="navigateTo('/datos-personales')">
+        Ir a Docentes Simulados
+      </button>
+    </div>
+
+    <div class="content-with-help" *ngIf="!bloqueado">
+      <div class="content-with-help-main">
+        <div class="form-container">
+          <div class="form-gridcenter">
+            <label for="ejercicio">Ejercicio en el que simulamos las Retribuciones</label>
+            <select
+              id="ejercicio"
+              [(ngModel)]="ejercicioSeleccionado"
+              (change)="onCambioEjercicio()"
+              (focus)="setAyudaActiva('ejercicio')"
+              (blur)="restablecerAyudaGeneral()"
+              class="form-select">
+              <option *ngFor="let ej of ejercicios" [value]="ej">{{ ej }}</option>
+            </select>
+          </div>
+
+          <fieldset class="nominas-previas-group">
+            <legend>Rellenar este grupo sólo si se ha cobrado alguna nómina en el ejercicio</legend>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="mesHasta">He cobrado las nóminas hasta el mes</label>
+                <select
+                  id="mesHasta"
+                  name="mesHasta"
+                  class="form-select"
+                  [(ngModel)]="mesHastaAbonado"
+                  (ngModelChange)="onCambioMesHasta()"
+                  (focus)="setAyudaActiva('mesHasta')"
+                  (blur)="restablecerAyudaGeneral()"
+                  title="Mes hasta el que ya se han abonado las retribuciones en el ejercicio">
+                  <option [ngValue]="null">-- Sin seleccionar --</option>
+                  <option *ngFor="let m of mesesOpciones" [value]="m.value">{{ m.label }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="impBrutoAbonado">
+                  Importe bruto abonado
+                  <span *ngIf="hayMesSeleccionado" class="required-mark">*</span>
+                </label>
+                <input
+                  id="impBrutoAbonado"
+                  name="impBrutoAbonado"
+                  class="form-input"
+                  type="number"
+                  min="0.01"
+                  max="999999999"
+                  step="0.01"
+                  [(ngModel)]="impBrutoAbonado"
+                  [disabled]="!hayMesSeleccionado"
+                  (focus)="setAyudaActiva('impBrutoAbonado')"
+                  (blur)="restablecerAyudaGeneral()"
+                  [placeholder]="hayMesSeleccionado ? 'Obligatorio' : 'Seleccione antes un mes'"
+                  title="Importe bruto ya abonado durante el ejercicio">
+                <div *ngIf="mostrarErrorImpBrutoAbonado" class="field-error">
+                  Debe informar un importe mayor que cero.
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="impRetenciones">Importe retenciones IRPF practicadas</label>
+                <input
+                  id="impRetenciones"
+                  name="impRetenciones"
+                  class="form-input"
+                  type="number"
+                  min="0"
+                  max="999999999"
+                  step="0.01"
+                  [(ngModel)]="impRetencionesPracticadas"
+                  [disabled]="!hayMesSeleccionado"
+                  (focus)="setAyudaActiva('impRetenciones')"
+                  (blur)="restablecerAyudaGeneral()"
+                  [placeholder]="hayMesSeleccionado ? 'Opcional' : 'Seleccione antes un mes'"
+                  title="Importe IRPF ya abonado durante el ejercicio">
+              </div>
+
+              <div class="form-group">
+                <label for="impGastos">Importe Gastos Abonados (S.S)</label>
+                <input
+                  id="impGastos"
+                  name="impGastos"
+                  class="form-input"
+                  type="number"
+                  min="0"
+                  max="999999999"
+                  step="0.01"
+                  [(ngModel)]="impGastosRealizados"
+                  [disabled]="!hayMesSeleccionado"
+                  (focus)="setAyudaActiva('impGastos')"
+                  (blur)="restablecerAyudaGeneral()"
+                  [placeholder]="hayMesSeleccionado ? 'Opcional' : 'Seleccione antes un mes'"
+                  title="Importe Cotizaciones a la Seguridad Social ya abonadas durante el ejercicio">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="actions-row">
+            <div class="form-group button-container btn-center">
+              <button class="btn btn-primary" (click)="ejecutarSimulacion()" [disabled]="cargando">
+                <span class="btn-icon">⚙️</span>
+                Ejecutar
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="resultadoMeses.length > 0" class="resultados">
+            <div class="simulacion-resumen">
+              <div class="simulacion-resumen-card">
+                <h3>Porcentaje IRPF estimado</h3>
+                <p>{{ porcIrpf | number:'1.1-2' }}%</p>
+              </div>
+              <div class="simulacion-resumen-card">
+                <h3>Importe bruto anual</h3>
+                <p>{{ importeBrutoAnual !== null ? (importeBrutoAnual | number:'1.2-2') : 'No disponible' }}</p>
+              </div>
+              <div class="simulacion-resumen-card">
+                <h3>Importe anual de retenciones</h3>
+                <p>{{ importeRetencionesAnual !== null ? (importeRetencionesAnual | number:'1.2-2') : 'No disponible' }}</p>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mes</th>
+                    <th>Bruto Simulado</th>
+                    <th>Cotización Simulada (S.S)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of resultadoMeses">
+                    <td>{{ r.mesNombre.toLocaleUpperCase() }}</td>
+                    <td>{{ r.importeBrutoMes | number:'1.2-2' }}</td>
+                    <td>{{ r.importeCotizadoMes | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td>TOTAL</td>
+                    <td>{{ totalBrutoPendiente | number:'1.2-2' }}</td>
+                    <td>{{ totalGastosPendiente | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="cargando" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Calculando...</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="help-panel">
+        <h3 class="help-panel-title">{{ ayudaActiva.titulo }}</h3>
+        <p class="help-panel-text">{{ ayudaActiva.descripcion }}</p>
+        <ul class="help-panel-list" *ngIf="ayudaActiva.puntos?.length">
+          <li *ngFor="let punto of ayudaActiva.puntos">{{ punto }}</li>
+        </ul>
+      </aside>
+    </div>
+  </main>
+</div>
+
+
+
+

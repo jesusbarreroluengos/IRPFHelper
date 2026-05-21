@@ -1,0 +1,354 @@
+/* Estilos para distribución 50/50 de bloques familiares */
+
+/* Contenedor del grid de datos familiares */
+.family-data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Bloque de datos familiares */
+.family-data-block {
+  width: 100%;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header del bloque */
+.family-data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.family-data-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Contenido del bloque */
+.family-data-content {
+  padding: 20px;
+}
+
+
+/* Sección de lista de descendientes */
+.descendientes-list-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Sección de lista de ascendientes */
+.ascendientes-list-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Contenedor de la tabla de descendientes */
+.descendientes-table-container {
+  overflow-x: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Contenedor de la tabla de ascendientes */
+.ascendientes-table-container {
+  overflow-x: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Tabla de descendientes de solo lectura */
+.descendientes-table-readonly {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 600px;
+  background: white;
+  border: 2px solid #495057;
+}
+
+/* Encabezados de la tabla */
+.descendientes-table-readonly thead {
+  background-color: #e9ecef;
+}
+
+.descendientes-table-readonly th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9em;
+  color: #495057;
+  border-bottom: 2px solid #495057;
+  border-right: 1px solid #495057;
+  vertical-align: middle;
+}
+
+.descendientes-table-readonly th:last-child {
+  border-right: none;
+}
+
+/* Anchos fijos para cada columna */
+.col-anio-nac {
+  width: 20%;
+  text-align: center;
+}
+
+.col-anio-adop {
+  width: 20%;
+  text-align: center;
+}
+
+.col-edad {
+  width: 15%;
+  text-align: center;
+}
+
+.col-por-entero {
+  width: 15%;
+  text-align: center;
+}
+
+.col-compartido {
+  width: 15%;
+  text-align: center;
+}
+
+.col-discapacidad {
+  width: 45%;
+}
+
+/* Filas de datos */
+.descendiente-row {
+  border-bottom: 1px solid #495057;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.descendiente-row:hover {
+  background-color: #f8f9fa;
+}
+
+.descendiente-row td {
+  padding: 10px 8px;
+  vertical-align: middle;
+  border-right: 1px solid #495057;
+  font-size: 0.9em;
+}
+
+.descendiente-row td:last-child {
+  border-right: none;
+}
+
+/* Filas de datos para ascendientes */
+.ascendiente-row {
+  border-bottom: 1px solid #495057;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.ascendiente-row:hover {
+  background-color: #f8f9fa;
+}
+
+.ascendiente-row td {
+  padding: 10px 8px;
+  vertical-align: middle;
+  border-right: 1px solid #495057;
+  font-size: 0.9em;
+}
+
+.ascendiente-row td:last-child {
+  border-right: none;
+}
+
+/* Estilos para el contenido de las celdas */
+.descendiente-year {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9em;
+}
+
+.descendiente-discapacidad {
+  color: #495057;
+  line-height: 1.4;
+  font-size: 0.9em;
+}
+
+.descendiente-por-entero {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Estados del campo "Por Entero" */
+.por-entero-yes {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.por-entero-no {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Estados del campo "Compartido" */
+.compartido-yes {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.compartido-no {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Estilos para ascendientes */
+.ascendiente-year {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9em;
+}
+
+.ascendiente-age {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9em;
+}
+
+.ascendiente-discapacidad {
+  color: #495057;
+  line-height: 1.4;
+  font-size: 0.9em;
+}
+
+.ascendiente-compartido {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Mensaje cuando no hay datos */
+.no-data-message {
+  text-align: center;
+  padding: 30px 20px;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+.no-data-message p {
+  margin: 0;
+  font-size: 0.95em;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .family-data-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  
+  .descendientes-table-container {
+    font-size: 0.85em;
+    margin-top: 15px;
+  }
+  
+  .descendientes-table-readonly {
+    min-width: 500px;
+  }
+  
+  .descendientes-table-readonly th {
+    padding: 10px 6px;
+    font-size: 0.8em;
+  }
+  
+  .descendiente-row td {
+    padding: 8px 6px;
+    font-size: 0.85em;
+  }
+  
+  .descendiente-por-entero {
+    font-size: 0.8em;
+    padding: 3px 6px;
+    min-width: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .descendientes-table-readonly {
+    min-width: 400px;
+  }
+  
+  .descendientes-table-readonly th {
+    padding: 8px 4px;
+    font-size: 0.75em;
+  }
+  
+  .descendiente-row td {
+    padding: 6px 4px;
+    font-size: 0.8em;
+  }
+  
+  .col-anio-nac {
+    width: 18%;
+  }
+  
+  .col-anio-adop {
+    width: 18%;
+  }
+  
+  .col-por-entero {
+    width: 16%;
+  }
+  
+  .col-discapacidad {
+    width: 48%;
+  }
+  
+  .descendiente-por-entero {
+    font-size: 0.75em;
+    padding: 2px 4px;
+    min-width: 30px;
+  }
+}
+
+/* Mejoras de accesibilidad */
+.descendientes-table-readonly th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.descendiente-row:focus-within {
+  background-color: #e3f2fd;
+  outline: 2px solid #2196f3;
+  outline-offset: -2px;
+}

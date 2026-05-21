@@ -1,0 +1,116 @@
+﻿<div class="main-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+        <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button
+          type="button"
+          class="menu-button"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="user-area" *ngIf="currentUsername">
+      <div class="persona-info">
+        <span class="persona-icon">&#128100;</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="change-password-btn"
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contrase&ntilde;a">
+          <span class="btn-icon">&#128274;</span>
+          <span class="btn-text">Cambiar Contrase&ntilde;a</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button
+          type="button"
+          class="menu-button"
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button
+          type="button"
+          class="menu-button"
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerrar sesi&oacute;n">
+          <span class="menu-icon">&#9203;</span>
+          <span class="menu-text">Cerrar Sesi&oacute;n</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content principal-main-content">
+    <div class="content-header">
+      <h1>Seleccione el docente con el que desea trabajar</h1>
+    </div>
+
+    <div class="content-body principal-content-body">
+      <div class="welcome-card docente-selector-layout">
+        <div *ngIf="cargando" class="loading-indicator">
+          <div class="spinner"></div>
+          <p>Cargando docentes simulados...</p>
+        </div>
+
+        <div *ngIf="!cargando && mensajeError" class="message error">
+          {{ mensajeError }}
+        </div>
+
+        <div *ngIf="!cargando && !mensajeError && personasSimuladas.length === 0" class="no-data">
+          <p>No hay docentes simulados disponibles.</p>
+        </div>
+
+        <div *ngIf="!cargando && !mensajeError && personasSimuladas.length > 0" class="docente-selector-grid">
+          <button
+            type="button"
+            class="docente-selector-card"
+            [class.active]="persona.idPersona === personaSeleccionada?.idPersona"
+            *ngFor="let persona of personasSimuladas"
+            (click)="seleccionarDocente(persona)">
+            <span class="docente-selector-icon" aria-hidden="true">&#128100;</span>
+            <span class="docente-selector-name">{{ persona.nombre }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+

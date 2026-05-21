@@ -1,0 +1,27 @@
+<div class="main-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <div class="content-header">
+      <h1>Verificacion de correo</h1>
+    </div>
+
+    <div class="content-body">
+      <div class="login-card">
+        <p class="message" *ngIf="loading">Verificando enlace...</p>
+
+        <p class="message" *ngIf="!loading">
+          {{ message }}
+        </p>
+
+        <button class="login-button" (click)="goToLogin()" *ngIf="!loading">
+          Ir al login
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

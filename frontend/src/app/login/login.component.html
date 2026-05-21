@@ -1,0 +1,75 @@
+<!-- src/app/login/login.component.html -->
+
+<div class="main-container">
+  <!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+    <ul class="menu-list">
+      <li class="menu-item">
+        <button class="menu-button">
+          <span class="menu-icon">👤</span>
+          <span class="menu-text">Docentes Simulados</span>
+        </button>
+      </li>
+      <li class="menu-item">
+        <button class="menu-button">
+          <span class="menu-icon">🧑‍🏫</span>
+          <span class="menu-text">Puestos Tipo</span>
+        </button>
+      </li>
+      <li class="menu-item">
+        <button class="menu-button">
+          <span class="menu-icon">📄</span>
+          <span class="menu-text">Contratos</span>
+        </button>
+      </li>
+      <li class="menu-item">
+        <button class="menu-button">
+          <span class="menu-icon">💰</span>
+          <span class="menu-text">Simulación IRPF</span>
+        </button>
+      </li>
+
+    </ul>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content">
+    <div class="content-header">
+      <h1>Iniciar Sesión</h1>
+      <p>Accede a tu cuenta para gestionar tus declaraciones de la renta</p>
+    </div>
+    
+    <div class="content-body">
+      <div class="login-card">
+        <form (ngSubmit)="onSubmit()" class="login-form">
+          <div class="form-group">
+            <label for="username">Usuario:</label>
+            <input type="text" id="username" [(ngModel)]="username" name="username" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" [(ngModel)]="password" name="password" required>
+          </div>
+
+          <button type="submit" class="login-button">Acceder</button>
+        </form>
+
+        <p class="message">{{ message }}</p>
+
+        <button
+          *ngIf="showResendVerificationButton"
+          (click)="reenviarCorreoVerificacion()"
+          [disabled]="resendInProgress"
+          class="create-user-button">
+          {{ resendInProgress ? 'Reenviando...' : 'Reenviar correo de verificacion' }}
+        </button>
+        
+        <button (click)="goToCrearUsuario()" class="create-user-button">Crear usuario</button>
+      </div>
+    </div>
+  </main>
+</div>

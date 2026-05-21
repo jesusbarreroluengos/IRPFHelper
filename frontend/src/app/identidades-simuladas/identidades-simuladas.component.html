@@ -1,0 +1,458 @@
+﻿<div class="main-container">
+  <!-- Menú lateral -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>IRPF Helper</h2>
+    </div>
+
+    <div class="sidebar-header-user" *ngIf="currentUsername">
+      <button
+        type="button"
+        class="persona-simulada-button"
+        [disabled]="!canSwitchDocente"
+        [title]="canSwitchDocente ? 'Cambiar docente simulado' : 'Solo hay un docente simulado disponible'"
+        (click)="navigateToDocenteSelector()"
+        *ngIf="personaSeleccionada">
+          <div class="persona-simulada-info" [class.disabled]="!canSwitchDocente">
+          <div class="persona-info">
+            <span class="persona-icon">&#128100;</span>
+            <span class="persona-name">
+              <span class="persona-label">Docente</span>
+              <span class="persona-selected-name">{{ personaSeleccionada.nombre }}</span>
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item" [hidden]="item.route === '/administracion'">
+        <button 
+          class="menu-button" 
+          [class.active]="item.route === '/datos-personales'"
+          (click)="navigateTo(item.route)">
+          <span class="menu-icon">{{ item.icon }}</span>
+          <span class="menu-text">{{ item.name }}</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="user-area" *ngIf="currentUsername">
+
+      <div class="persona-info">
+        <span class="persona-icon">👤</span>
+        <span class="persona-name">{{ usernameFormatted }}</span>
+      </div>
+
+
+      <div class="user-actions">
+        <button 
+          class="change-password-btn" 
+          (click)="navigateTo('/cambiar-password')"
+          title="Cambiar contraseña">
+          <span class="btn-icon">🔒</span>
+          <span class="btn-text">Cambiar Contraseña</span>
+        </button>
+      </div>
+
+      <div class="user-actions" *ngIf="isAdmin">
+        <button 
+          class="menu-button" 
+          (click)="navigateTo('/administracion')"
+          title="Administración">
+          <span class="menu-icon">&#9881;&#65039;</span>
+          <span class="menu-text">Administración</span>
+        </button>
+      </div>
+
+      <div class="user-actions">
+        <button 
+          class="menu-button" 
+          [class.logout-button]="true"
+          (click)="navigateTo('/login')"
+          title="Cerar Sesión">
+          <span class="menu-icon">⏻</span>
+          <span class="menu-text">Cerrar Sesión</span>
+        </button>
+      </div>
+
+      
+
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main class="main-content centered-header-main form-layout-header-main identidades-header-main">
+    <!-- Mensaje de éxito/error -->
+    <div *ngIf="mostrarMensaje" class="message" [class.success-message]="tipoMensaje === 'success'" [class.error-message]="tipoMensaje === 'error'">
+      <div class="message-content">
+        <span class="message-icon">{{ tipoMensaje === 'success' ? '✅' : '?' }}</span>
+        <span class="message-text">{{ mensaje }}</span>
+        <button class="close-btn" (click)="cerrarMensaje()">×</button>
+      </div>
+    </div>
+
+    <div class="content-header">
+      <h1>Gestión de Docentes Simulados</h1>
+    </div>
+
+    <div class="content-body identidades-content-body">
+      <div class="content-with-help" *ngIf="!cargando; else cargandoIdentidadesTpl">
+      <div class="content-with-help-main">
+      <!-- Selector de docente simulado y botón nuevo docente -->
+      <div class="persona-controls" *ngIf="personasSimuladas.length > 0">
+        <div class="persona-selector-inline">
+          <label for="personaSelect">Docente simulado:</label>
+          <select 
+            id="personaSelect" 
+            [(ngModel)]="personaSeleccionadaId" 
+            (change)="seleccionarPersona(personaSeleccionadaId!)"
+            (focus)="setAyudaActiva('personaSeleccionada')"
+            (blur)="restablecerAyudaGeneral()"
+            class="form-select">
+            <option *ngFor="let persona of personasSimuladas" [value]="persona.idPersona">
+              {{ persona.nombre }}
+            </option>
+          </select>
+        </div>
+        <button 
+          class="btn btn-primary" 
+          (click)="nuevaIdentidad()"
+          [disabled]="cargando">
+          <span class="btn-icon">➕</span>
+          Nuevo Docente
+        </button>
+      </div>
+
+      <!-- Formulario -->
+      <div class="form-container">
+        <form (ngSubmit)="guardarPersona()" #personaForm="ngForm">
+          <div class="form-grid">
+            <!-- Nombre -->
+            <div class="form-group">
+              <label for="nombre">Nombre *</label>
+              <input 
+                type="text" 
+                id="nombre" 
+                name="nombre"
+                [(ngModel)]="formularioPersona.nombre" 
+                class="form-input"
+                (focus)="setAyudaActiva('nombre')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+            </div>
+
+            <!-- Año de nacimiento -->
+            <div class="form-group">
+              <label for="anioNac">Año de nacimiento *</label>
+              <select 
+                id="anioNac" 
+                name="anioNac"
+                [(ngModel)]="formularioPersona.anioNac" 
+                class="form-select"
+                (focus)="setAyudaActiva('anioNac')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+                <option value="">Seleccione un año</option>
+                <option *ngFor="let anio of aniosNacimiento" [value]="anio">
+                  {{ anio }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Discapacidad -->
+            <div class="form-group">
+              <label for="discapacidad">Discapacidad *</label>
+              <select 
+                id="discapacidad" 
+                name="discapacidad"
+                [(ngModel)]="formularioPersona.codDiscapacidad" 
+                class="form-select"
+                (focus)="setAyudaActiva('discapacidad')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+                <option *ngFor="let disc of discapacidades" [value]="disc.codDiscapacidad">
+                  {{ disc.descDiscapacidad }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Situación familiar -->
+            <div class="form-group">
+              <label for="situacionFamiliar">Situación familiar *</label>
+              <select 
+                id="situacionFamiliar" 
+                name="situacionFamiliar"
+                [(ngModel)]="formularioPersona.codSitfam" 
+                class="form-select"
+                (focus)="setAyudaActiva('situacionFamiliar')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+                <option *ngFor="let sitFam of situacionesFamiliares" [value]="sitFam.codSitfam">
+                  {{ sitFam.descSitfam }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Residencia en Ceuta o Melilla -->
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="ceumelilla"
+                  [(ngModel)]="formularioPersona.indCeumelilla"
+                  [ngModel]="formularioPersona.indCeumelilla === 'S'"
+                  (ngModelChange)="formularioPersona.indCeumelilla = $event ? 'S' : 'N'"
+                  (focus)="setAyudaActiva('residenciaCeutaMelilla')"
+                  (blur)="restablecerAyudaGeneral()"
+                  class="form-checkbox">
+                <span class="checkbox-text">Residencia en Ceuta o Melilla</span>
+              </label>
+            </div>
+
+            <!-- Contrato -->
+            <div class="form-group">
+              <label for="contrato">Contrato *</label>
+              <select 
+                id="contrato" 
+                name="contrato"
+                [(ngModel)]="formularioPersona.codContrato" 
+                class="form-select"
+                (focus)="setAyudaActiva('contrato')"
+                (blur)="restablecerAyudaGeneral()"
+                required>
+                <option *ngFor="let contrato of contratos" [value]="contrato.codContrato">
+                  {{ contrato.descContrato }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="impPensionConyuge">Importe Pensión Cónyuge</label>
+              <input 
+                id="impPensionConyuge"
+                name="impPensionConyuge"
+                class="form-input"
+                type="number"
+                min="0"
+                max="50000"
+                step="0.01"
+                [(ngModel)]="formularioPersona.impPensionConyuge" 
+                (focus)="setAyudaActiva('pensionConyuge')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Pensión compensatoria a favor del cónyuge. Importe fijado judicialmente'">
+            </div>
+
+            <div class="form-group">
+              <label for="impPensionHijos">Importe Pensión Hijos</label>
+              <input 
+                id="impPensionHijos"
+                name="impPensionHijos"
+                class="form-input"
+                type="number"
+                min="0"
+                max="50000"
+                step="0.01"
+                [(ngModel)]="formularioPersona.impPensionHijos"
+                (focus)="setAyudaActiva('pensionHijos')"
+                (blur)="restablecerAyudaGeneral()"
+                [title]="'Pensión compensatoria a favor del cónyuge. Importe fijado judicialmente'">
+            </div>
+
+            <div class="form-group">
+              <label for="idComunidad">Comunidad Autónoma *</label>
+              <select
+                id="idComunidad"
+                name="idComunidad"
+                [(ngModel)]="formularioPersona.idComunidad"
+                class="form-select"
+                required>
+                <option [ngValue]="undefined">Seleccione una comunidad</option>
+                <option *ngFor="let comunidad of comunidades" [ngValue]="comunidad.idComunidad">
+                  {{ comunidad.descComunidad }}
+                </option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Bloques de descendientes y ascendientes -->
+          <div class="family-data-container" *ngIf="!modoAlta && personaSeleccionada">
+            <div class="family-data-grid">
+              <!-- Bloque de descendientes -->
+              <div class="family-data-block">
+                <div class="family-data-header">
+                  <h3>Descendientes</h3>
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary btn-sm"
+                    (click)="editarDescendientes()"
+                    title="Editar descendientes">
+                    <span class="btn-icon">✏️</span>
+                    Editar
+                  </button>
+                </div>
+                <div class="family-data-content">
+                  <div *ngIf="descendientes.length === 0" class="no-data-message">
+                    <p>No hay descendientes registrados</p>
+                  </div>
+                  <div *ngIf="descendientes.length > 0" class="descendientes-list-section">
+                    <div class="table-container">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th class="col-anio-nac">Año nac.</th>
+                            <th class="col-anio-adop">Año adop.</th>
+                            <th class="col-por-entero">Por entero</th>
+                            <th class="col-discapacidad">Discapacidad</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let descendiente of descendientes" class="descendiente-row">
+                            <td class="col-anio-nac">
+                              <span class="descendiente-year">
+                                {{ descendiente.anioNac || '-' }}
+                              </span>
+                            </td>
+                            <td class="col-anio-adop">
+                              <span class="descendiente-year">
+                                {{ descendiente.anioAdopcion || '-' }}
+                              </span>
+                            </td>
+                            <td class="col-por-entero">
+                              <span class="descendiente-por-entero" [ngClass]="{'por-entero-yes': descendiente.indPorentero === 'S', 'por-entero-no': descendiente.indPorentero !== 'S'}">
+                                {{ descendiente.indPorentero === 'S' ? 'Sí' : 'No' }}
+                              </span>
+                            </td>
+                            <td class="col-discapacidad">
+                              <span class="descendiente-discapacidad">{{ obtenerDescripcionDiscapacidad(descendiente.codDiscapacidad) }}</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque de ascendientes -->
+              <div class="family-data-block">
+                <div class="family-data-header">
+                  <h3>Ascendientes</h3>
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary btn-sm"
+                    (click)="editarAscendientes()"
+                    title="Editar ascendientes">
+                    <span class="btn-icon">✏️</span>
+                    Editar
+                  </button>
+                </div>
+                <div class="family-data-content">
+                  <div *ngIf="ascendientes.length === 0" class="no-data-message">
+                    <p>No hay ascendientes registrados</p>
+                  </div>
+                  <div *ngIf="ascendientes.length > 0" class="ascendientes-list-section">
+                    <div class="table-container">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th class="col-anio-nac">Año nac.</th>
+                            <th class="col-edad">Edad</th>
+                            <th class="col-discapacidad">Discapacidad</th>
+                            <th class="col-compartido">Compartido</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let ascendiente of ascendientes" class="ascendiente-row">
+                            <td class="col-anio-nac">
+                              <span class="ascendiente-year">
+                                {{ ascendiente.anioNac || '-' }}
+                              </span>
+                            </td>
+                            <td class="col-edad">
+                              <span class="ascendiente-age">{{ calcularEdad(ascendiente.anioNac) }} años</span>
+                            </td>
+                            <td class="col-discapacidad">
+                              <span class="ascendiente-discapacidad">{{ obtenerDescripcionDiscapacidad(ascendiente.codDiscapacidad) }}</span>
+                            </td>
+                            <td class="col-compartido">
+                              <span class="ascendiente-compartido">
+                                {{ ascendiente.indCompartido  }}
+                              </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn btn-success"
+              [disabled]="cargando || !personaForm.form.valid">
+              <span class="btn-icon">💾</span>
+              {{ modoAlta ? 'Crear Docente' : 'Modificar Docente' }}
+            </button>
+
+            <button 
+              type="button" 
+              class="btn btn-danger"
+              *ngIf="!modoAlta && personaSeleccionadaId"
+              (click)="eliminarPersona()"
+              [disabled]="cargando">
+              <span class="btn-icon">🗑️</span>
+              Eliminar Docente
+            </button>
+          </div>
+        </form>
+      </div>
+      </div>
+
+      <aside class="help-panel">
+        <h3 class="help-panel-title">{{ ayudaActiva.titulo }}</h3>
+        <p class="help-panel-text">{{ ayudaActiva.descripcion }}</p>
+        <ul class="help-panel-list" *ngIf="ayudaActiva.puntos?.length">
+          <li *ngFor="let punto of ayudaActiva.puntos">{{ punto }}</li>
+        </ul>
+      </aside>
+      </div>
+
+      <ng-template #cargandoIdentidadesTpl>
+      <div class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+      </ng-template>
+    </div>
+  </main>
+
+  <!-- Modal de gestión de descendientes -->
+  <app-descendientes-modal
+    [personaId]="personaSeleccionadaId"
+    [isVisible]="mostrarModalDescendientes"
+    (closeModal)="cerrarModalDescendientes()"
+    (descendientesUpdated)="onDescendientesUpdated($event)">
+  </app-descendientes-modal>
+
+  <!-- Modal de gestión de ascendientes -->
+  <app-ascendientes-modal
+    [personaId]="personaSeleccionadaId"
+    [isVisible]="mostrarModalAscendientes"
+    (closeModal)="cerrarModalAscendientes()"
+    (ascendientesUpdated)="onAscendientesUpdated($event)">
+  </app-ascendientes-modal>
+</div>
+
+
+
+
+
+
+
+
