@@ -17,6 +17,7 @@ import { CambiarPasswordComponent } from './cambiar-password/cambiar-password';
 import { FrontendLoggingInterceptor } from './services/frontend-logging.interceptor';
 import { GlobalErrorHandler } from './services/global-error-handler.service';
 import { VerificarEmailComponent } from './verificar-email/verificar-email.component';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { VerificarEmailComponent } from './verificar-email/verificar-email.compo
     PersonasModule,
     CrearUsuarioModule,
     Principal,
-    CambiarPasswordComponent
+    CambiarPasswordComponent,
+    ConfirmDialogComponent
 
   ],
   providers: [

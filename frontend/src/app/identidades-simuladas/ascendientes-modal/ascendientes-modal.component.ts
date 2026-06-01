@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PersonaSimuladaService, Discapacidad, ApiResponse } from '../../services/persona-simulada.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 export interface Ascendiente {
   idAscendiente?: number;
@@ -54,7 +55,7 @@ export class AscendientesModalComponent implements OnInit, OnChanges {
   hijosCompartido: number[] = [];
 
 
-  constructor(private personaSimuladaService: PersonaSimuladaService) {
+  constructor(private personaSimuladaService: PersonaSimuladaService, private confirmDialogService: ConfirmDialogService) {
     this.generarAniosNacimiento();
     this.generarHijosCompartido();
   }
@@ -192,10 +193,10 @@ export class AscendientesModalComponent implements OnInit, OnChanges {
     });
   }
 
-  eliminarAscendiente(ascendiente: Ascendiente): void {
+  async eliminarAscendiente(ascendiente: Ascendiente): Promise<void> {
     if (!ascendiente.idAscendiente) return;
 
-    if (!confirm('¿Está seguro de que desea eliminar este ascendiente?')) {
+    if (!await this.confirmDialogService.confirm('¿Está seguro de que desea eliminar este ascendiente?')) {
       return;
     }
 

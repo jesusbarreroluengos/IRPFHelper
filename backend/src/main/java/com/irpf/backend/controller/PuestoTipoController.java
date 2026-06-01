@@ -21,7 +21,6 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/api/puestos-tipo")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class PuestoTipoController {
 
     private static final String NOMBRE_REGEX = "^[A-Z0-9ÁÉÍÓÚÜÑ\\-_]+$";
@@ -100,16 +99,17 @@ public class PuestoTipoController {
      */
     @GetMapping("/especifico-default/{codEstudio}")
     public ResponseEntity<?> getImporteEspecifico(@PathVariable String codEstudio,
-                                                  @RequestParam(name = "idComunidad", required = false) Integer idComunidad) {
+                                                  @RequestParam(name = "idComunidad", required = false) Integer idComunidad,
+                                                  @RequestParam(name = "anio", required = false) Integer anio) {
         String cod = normalizarCodEstudio(codEstudio);
         if (cod == null) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, "Código de estudio inválido"));
         }
-        int anio = LocalDate.now().getYear();
-        return taEspecificoRepository.findByAnioAndCodEstudioAndIdComunidad(anio, cod, idComunidad != null ? idComunidad : 1)
+        int anioCalculo = anio != null ? anio : LocalDate.now().getYear();
+        return taEspecificoRepository.findByAnioAndCodEstudioAndIdComunidad(anioCalculo, cod, idComunidad != null ? idComunidad : 1)
                 .<ResponseEntity<?>>map(v -> ResponseEntity.ok(new ApiResponse(true, "Importe encontrado", v.getImporte())))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, "No se encontró importe específico para el año " + anio)));
+                        .body(new ApiResponse(false, "No se encontró importe específico para el año " + anioCalculo)));
     }
 
     /**
@@ -144,7 +144,7 @@ public class PuestoTipoController {
             if (error != null) {
                 return ResponseEntity.badRequest().body(new ApiResponse(false, error));
             }
-            int ejercicio = LocalDate.now().getYear();
+            int ejercicio = data.containsKey("ejercicio") ? parseInteger(data.get("ejercicio"), LocalDate.now().getYear()) : LocalDate.now().getYear();
             CalculoRetribucionesService.ImportesPuesto importes = calculoRetribucionesService.obtenerImportesPuestoTipo(ejercicio, puesto);
             Map<String, Object> payload = new HashMap<>();
             payload.put("importeBrutoMes", importes.getImporteBrutoMes());

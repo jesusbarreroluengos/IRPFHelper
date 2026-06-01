@@ -17,7 +17,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/descendientes")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class DescendienteController {
 
     @Autowired

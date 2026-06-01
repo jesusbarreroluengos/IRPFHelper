@@ -7,6 +7,7 @@ import { PersonaSimulada, PersonaSimuladaService } from '../services/persona-sim
 import { AuthService } from '../auth.service';
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { environment } from '../../environments/environment';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-personas',
@@ -45,7 +46,8 @@ export class PersonasComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private personaSimuladaService: PersonaSimuladaService,
-    private personaSelectionService: PersonaSimuladaSelectionService
+    private personaSelectionService: PersonaSimuladaSelectionService,
+    private confirmDialogService: ConfirmDialogService
 
   ) {}
 
@@ -271,8 +273,10 @@ setNumAccErroneos(usuario: Usuario, inputEvent: Event): void {
    * Elimina un usuario tras la confirmación explícita del operador.
    * @param id Identificador del usuario que se desea eliminar.
    */
-  eliminarUsuario(id: number): void {
-    if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+  async eliminarUsuario(id: number): Promise<void> {
+    if (!await this.confirmDialogService.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+      return;
+    }
       console.log('Intentando eliminar usuario con ID:', id);
       
       this.usuarioService.deleteUsuario(id).subscribe({
@@ -296,8 +300,6 @@ setNumAccErroneos(usuario: Usuario, inputEvent: Event): void {
           alert('Error al eliminar usuario: ' + (error.error || error.message || 'Error desconocido'));
         }
       });
-    }
-    
   }
 
   // Exponer Math para usar en el template

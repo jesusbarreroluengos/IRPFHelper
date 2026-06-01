@@ -6,6 +6,7 @@ import { AuthService } from '../auth.service';
 import { PersonaSimulada } from '../services/persona-simulada.service';
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { TablasMaestrasService, TaPorcCotiz } from '../services/tablas-maestras.service';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 
 interface AyudaContextual { titulo: string; descripcion: string; puntos?: string[]; }
 
@@ -53,7 +54,8 @@ export class AdminPorcCotizComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private personaSelectionService: PersonaSimuladaSelectionService,
-    private service: TablasMaestrasService
+    private service: TablasMaestrasService,
+    private confirmDialogService: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -107,8 +109,8 @@ export class AdminPorcCotizComponent implements OnInit {
     });
   }
 
-  eliminar(r: TaPorcCotiz): void {
-    if (!confirm(`¿Desea eliminar el registro del año ${r.anio}?`)) return;
+  async eliminar(r: TaPorcCotiz): Promise<void> {
+    if (!await this.confirmDialogService.confirm(`¿Desea eliminar el registro del año ${r.anio}?`)) return;
     this.service.deletePorcCotiz(r.anio).subscribe({
       next: () => { this.mostrarExito('Registro eliminado correctamente'); this.cargarDatos(); },
       error: () => this.mostrarError('Error al eliminar el registro')

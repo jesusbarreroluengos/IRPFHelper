@@ -109,6 +109,17 @@
             <option *ngFor="let p of puestos" [ngValue]="p.idPuestoTipo">{{ p.nomPuesto }}</option>
           </select>
         </div>
+        <div class="persona-selector-inline">
+          <label for="ejercicioSelect">Ejercicio:</label>
+          <select
+            id="ejercicioSelect"
+            class="form-select"
+            [(ngModel)]="ejercicioSeleccionado"
+            (change)="onCambioEjercicio()"
+            title="Ejercicio fiscal para el cálculo de retribuciones">
+            <option *ngFor="let anio of ejercicios" [ngValue]="anio">{{ anio }}</option>
+          </select>
+        </div>
         <button class="btn btn-primary" (click)="nuevoPuesto()" [disabled]="cargando">
           <span class="btn-icon">➕</span>
           Nuevo puesto tipo
@@ -232,7 +243,7 @@
                 placeholder="Dejar en blanco si coincide con tabla"
                 [title]="'Importe del específico general docente si no coincide con el que se presenta a la derecha'">
               <div class="especifico-tabla">
-                Importe tabla (año actual): 
+                Importe tabla ({{ ejercicioSeleccionado }}): 
                 <strong>{{ importeEspecificoTabla !== null ? (importeEspecificoTabla | number:'1.2-2') : '-' }}</strong>
               </div>
             </div>

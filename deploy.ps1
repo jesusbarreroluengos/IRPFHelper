@@ -1,15 +1,23 @@
-# Despliegue Angular + Spring Boot (WAR) en Tomcat 9.0.105 sin servicio
-# Usa shutdown.bat / startup.bat. Ejecutar como Administrador.
+# Despliegue Angular + Spring Boot (WAR) en Tomcat local
+# Ejecutar como Administrador.
+#
+# USO:
+#   .\deploy.ps1                    -> usa la base de datos local (por defecto)
+#   .\deploy.ps1 -Perfil alwaysdata -> usa la base de datos de AlwaysData
+#
+param(
+    [string]$Perfil = ""   # Perfil de Spring Boot: "" (local) o "alwaysdata"
+)
 
 # --- Configuracion ---
 $TomcatHome    = "C:\apache-tomcat-10.1.50"              # Ruta Tomcat
 $AngularDir    = "C:\Users\jbarl\Documents\UNIR\TFG\irpfHelper\frontend"                    # Carpeta del proyecto Angular
 $Npmci         = "npm ci" # npm ci
-$NgBuildCmd    = "ng build --configuration production --base-href /irpfhelper/" # build front
+$NgBuildCmd    = "ng build --configuration production" # build front (baseHref definido en angular.json)
 $FrontendDist  = "dist\frontend"                            # Ruta de dist relativa a AngularDir
 $BackendDir    = "C:\Users\jbarl\Documents\UNIR\TFG\irpfHelper\backend"                     # Carpeta del proyecto Spring Boot
 $StaticTarget  = "src\main\resources\static"             # Donde se incrusta el front
-$MavenCmd      = "mvn -DskipTests clean package"         # Empaquetar WAR
+$MavenCmd      = ".\mvnw -DskipTests clean package"   # Empaquetar WAR
 $WarRelPath    = "target\irpfhelper-0.0.1-SNAPSHOT.war"                      # WAR resultante relativo a backend
 $Contexto      = "irpfhelper"                                 # Nombre de contexto (WAR/carpeta)
 $BackupRoot    = "C:\backups\tomcat-deploys"             # Carpeta de backups
@@ -58,20 +66,46 @@ Pop-Location
 if (-not (Test-Path $WarOrigen)) { throw "WAR no encontrado: $WarOrigen" }
 
 
-# --- Paso 5: Backups del despliegue previo ---
+# --- Paso 5: Parar Tomcat si esta en ejecucion ---
+$ShutdownBat = Join-Path $TomcatHome "bin\shutdown.bat"
+if (Test-NetConnection -ComputerName "127.0.0.1" -Port $Puerto -InformationLevel Quiet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) {
+    Write-Host "Deteniendo Tomcat..." -ForegroundColor Yellow
+    Start-Process -FilePath $ShutdownBat -WorkingDirectory (Join-Path $TomcatHome "bin") -NoNewWindow -Wait
+    $espera = 0
+    while ((Test-NetConnection -ComputerName "127.0.0.1" -Port $Puerto -InformationLevel Quiet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) -and $espera -lt $TiempoParada) {
+        Start-Sleep -Seconds 1; $espera++
+    }
+    if (Test-NetConnection -ComputerName "127.0.0.1" -Port $Puerto -InformationLevel Quiet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) {
+        Write-Warning "Tomcat no paro en $TiempoParada s. Forzando terminacion de procesos java..."
+        Get-Process -Name "java" -ErrorAction SilentlyContinue | Stop-Process -Force
+        Start-Sleep -Seconds 3
+    }
+    Write-Host "Tomcat detenido."
+} else {
+    Write-Host "Tomcat no estaba en ejecucion."
+}
+
+# --- Paso 6: Backups del despliegue previo ---
 if (Test-Path $WarDestino)   { Copy-Item $WarDestino (Join-Path $BackupDir "$Contexto.war") -Force }
 if (Test-Path $Despliegue)   { Copy-Item $Despliegue (Join-Path $BackupDir $Contexto) -Recurse -Force }
 Write-Host "Backup guardado en $BackupDir"
 
-# --- Paso 6: Limpiar despliegue previo ---
+# --- Paso 7: Limpiar despliegue previo ---
 if (Test-Path $WarDestino) { Remove-Item $WarDestino -Force }
 if (Test-Path $Despliegue) { Remove-Item $Despliegue -Recurse -Force }
 
-# --- Paso 7: Copiar nuevo WAR a webapps ---
+# --- Paso 8: Copiar nuevo WAR a webapps ---
 Copy-Item $WarOrigen $WarDestino -Force
 Write-Host "Nuevo WAR copiado a $WarDestino"
 
-# --- Paso 8: Arrancar Tomcat con startup.bat ---
+# --- Paso 9: Configurar perfil de Spring Boot en Tomcat (setenv.bat) ---
+# Siempre se escribe setenv.bat para que el perfil sea siempre explícito
+$SetenvBat  = Join-Path $TomcatHome "bin\setenv.bat"
+$PerfilActivo = if ($Perfil -ne "") { $Perfil } else { "local" }
+Set-Content $SetenvBat "set JAVA_OPTS=%JAVA_OPTS% -Dspring.profiles.active=$PerfilActivo"
+Write-Host "Perfil activo: $PerfilActivo" -ForegroundColor Cyan
+
+# --- Paso 10: Arrancar Tomcat con startup.bat ---
 Write-Host "Arrancando Tomcat..." -ForegroundColor Yellow
 Start-Process -FilePath (Join-Path $TomcatHome "bin\startup.bat") -WorkingDirectory (Join-Path $TomcatHome "bin") -NoNewWindow -Wait
 $espera = 0
@@ -82,7 +116,7 @@ if (-not (Test-NetConnection -ComputerName "127.0.0.1" -Port $Puerto -Informatio
     Write-Warning "No se confirmo escucha en puerto $Puerto tras $TiempoArranque s. Revisa logs."
 }
 
-# --- Paso 9: Indicar logs ---
+# --- Paso 11: Indicar logs ---
 $LogDir = Join-Path $TomcatHome "logs"
 Write-Host "Despliegue finalizado. Logs en $LogDir (catalina.YYYY-MM-DD.log)" -ForegroundColor Green
 Write-Host "=== Despliegue $Contexto completado ===" -ForegroundColor Cyan

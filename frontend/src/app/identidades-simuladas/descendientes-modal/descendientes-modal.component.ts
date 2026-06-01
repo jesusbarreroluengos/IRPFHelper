@@ -2,6 +2,7 @@ import { Component, OnInit, OnChanges, Input, Output, EventEmitter } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PersonaSimuladaService, Discapacidad, ApiResponse } from '../../services/persona-simulada.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 export interface Descendiente {
   idDescendiente?: number;
@@ -50,7 +51,7 @@ export class DescendientesModalComponent implements OnInit, OnChanges {
   aniosNacimiento: number[] = [];
   aniosAdopcion: number[] = [];
 
-  constructor(private personaSimuladaService: PersonaSimuladaService) {
+  constructor(private personaSimuladaService: PersonaSimuladaService, private confirmDialogService: ConfirmDialogService) {
     this.generarAnios();
   }
 
@@ -226,12 +227,12 @@ export class DescendientesModalComponent implements OnInit, OnChanges {
     alert('Funcionalidad de edición pendiente de implementar');
   }
 
-  eliminarDescendiente(descendiente: Descendiente): void {
+  async eliminarDescendiente(descendiente: Descendiente): Promise<void> {
     if (!descendiente.idDescendiente) {
       return;
     }
 
-    const confirmacion = confirm(
+    const confirmacion = await this.confirmDialogService.confirm(
       '¿Está seguro de que desea eliminar este descendiente?\n\n' +
       `Año de nacimiento: ${descendiente.anioNac || 'No especificado'}\n` +
       `Año de adopción: ${descendiente.anioAdopcion || 'No especificado'}\n` +

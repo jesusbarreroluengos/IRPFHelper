@@ -7,6 +7,7 @@ import { PersonaSimuladaService, PersonaSimulada, Discapacidad, SituacionFamilia
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { DescendientesModalComponent, Descendiente } from './descendientes-modal/descendientes-modal.component';
 import { AscendientesModalComponent, Ascendiente } from './ascendientes-modal/ascendientes-modal.component';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 
 interface AyudaContextual {
   titulo: string;
@@ -141,7 +142,8 @@ export class IdentidadesSimuladasComponent implements OnInit {
     private personaSimuladaService: PersonaSimuladaService,
     private authService: AuthService,
     private router: Router,
-    private personaSelectionService: PersonaSimuladaSelectionService
+    private personaSelectionService: PersonaSimuladaSelectionService,
+    private confirmDialogService: ConfirmDialogService
   ) {
     this.generarAniosNacimiento();
   }
@@ -475,12 +477,14 @@ export class IdentidadesSimuladasComponent implements OnInit {
   /**
    * Elimina la identidad simulada actualmente seleccionada.
    */
-  eliminarPersona(): void {
+  async eliminarPersona(): Promise<void> {
     if (!this.personaSeleccionadaId) return;
 
-    const confirmacion = confirm(
+    const confirmacion = await this.confirmDialogService.confirm(
       '¿Está seguro de que desea eliminar esta identidad simulada?\n\n' +
       'Se eliminarán todos los datos asociados:\n' +
+      '- Puestos tipo\n' +
+      '- Contratos\n' +
       '- Descendientes\n' +
       '- Ascendientes\n' +
       '- Datos económicos\n' +

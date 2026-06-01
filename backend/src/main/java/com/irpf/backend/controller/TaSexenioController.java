@@ -19,7 +19,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin/sexenio")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class TaSexenioController {
 
     @Autowired

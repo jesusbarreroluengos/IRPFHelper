@@ -69,7 +69,9 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
-        <!-- Tomcat externo -->
+        <!-- Tomcat: provided para despliegue en Tomcat externo (local).
+             Spring Boot reempaqueta el WAR como ejecutable, por lo que
+             'java -jar' también funciona (Render) sin cambiar nada. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>

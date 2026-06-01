@@ -109,7 +109,7 @@ export class PuestoTipoService {
    * @param puesto Datos parciales del puesto con los que se hará el cálculo.
    * @returns Observable con el detalle de importes generado por el backend.
    */
-  calcularImportesDetalle(puesto: Partial<PuestoTipo>): Observable<ApiResponse> {
+  calcularImportesDetalle(puesto: Partial<PuestoTipo> & { ejercicio?: number }): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/puestos-tipo/calcular-detalle`, puesto, { withCredentials: true });
   }
 
@@ -135,8 +135,11 @@ export class PuestoTipoService {
    * @param idComunidad Identificador opcional de la comunidad autónoma.
    * @returns Observable con el importe específico sugerido por la API.
    */
-  getImporteEspecifico(codEstudio: string, idComunidad?: number): Observable<ApiResponse> {
-    const query = idComunidad !== undefined ? `?idComunidad=${idComunidad}` : '';
+  getImporteEspecifico(codEstudio: string, idComunidad?: number, anio?: number): Observable<ApiResponse> {
+    const params: string[] = [];
+    if (idComunidad !== undefined) params.push(`idComunidad=${idComunidad}`);
+    if (anio !== undefined) params.push(`anio=${anio}`);
+    const query = params.length > 0 ? `?${params.join('&')}` : '';
     return this.http.get<ApiResponse>(`${this.apiUrl}/puestos-tipo/especifico-default/${codEstudio}${query}`, { withCredentials: true });
   }
 }

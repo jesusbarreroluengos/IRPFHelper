@@ -115,6 +115,7 @@
                       <thead>
                         <tr>
                           <th>Puesto tipo</th>
+                          <th>Comunidad</th>
                           <th>Fecha desde</th>
                           <th>Fecha hasta</th>
                           <th>Vac. no disfrutadas</th>
@@ -124,6 +125,7 @@
                       <tbody>
                         <tr *ngFor="let contrato of contratos">
                           <td>{{ getNombrePuesto(contrato.idPuestoTipo) }}</td>
+                          <td>{{ getComunidadPuesto(contrato.idPuestoTipo) }}</td>
                           <td>{{ formatearFecha(contrato.fechaDesde) }}</td>
                           <td>{{ contrato.fechaHasta ? formatearFecha(contrato.fechaHasta) : '-' }}</td>
                           <td>
@@ -170,7 +172,7 @@
                         </select>
                       </div>
 
-                      <div class="form-group">
+                      <div class="form-group form-group--center">
                         <label for="fechaDesde">Fecha desde *</label>
                         <input
                           id="fechaDesde"
@@ -209,6 +211,11 @@
                             (blur)="restablecerAyudaGeneral()">
                           <span class="checkbox-text">Calcular vacaciones no disfrutadas</span>
                         </label>
+                      </div>
+
+                      <div class="form-group form-group--span2" *ngIf="getComunidadPuesto(formulario.idPuestoTipo)">
+                        <label>Comunidad autónoma</label>
+                        <span class="form-static-value">{{ getComunidadPuesto(formulario.idPuestoTipo) }}</span>
                       </div>
                     </div>
 

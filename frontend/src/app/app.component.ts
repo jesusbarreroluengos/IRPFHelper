@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { FrontendLoggingService } from './services/frontend-logging.service';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
   standalone: false,
   template: `
     <router-outlet></router-outlet>
+    <app-confirm-dialog></app-confirm-dialog>
   `
 })
 /**

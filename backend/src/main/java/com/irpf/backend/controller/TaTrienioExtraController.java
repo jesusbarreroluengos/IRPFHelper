@@ -17,7 +17,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin/trienio-extra")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class TaTrienioExtraController {
 
     @Autowired

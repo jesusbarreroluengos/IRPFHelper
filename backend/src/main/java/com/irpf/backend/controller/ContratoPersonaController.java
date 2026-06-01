@@ -22,7 +22,6 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/api/contratos-persona")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ContratoPersonaController {
 
     private static final String MENSAJE_SIN_PERSONA = "Para incluir un nuevo contrato, primero debe crear una persona simulada y puestos tipo para esa persona";

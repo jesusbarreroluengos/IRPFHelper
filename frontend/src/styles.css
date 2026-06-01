@@ -277,6 +277,7 @@ body {
 
 .content-header {
   margin-bottom: 30px;
+  text-align: center;
 }
 
 .content-header h1 {
@@ -284,6 +285,10 @@ body {
   font-size: 2.5rem;
   margin-bottom: 10px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .content-header p {
@@ -445,6 +450,7 @@ label {
   font-weight: 600;
   color: #555;
   font-size: 1rem;
+  text-align: center;
 }
 
 .form-control {
@@ -488,12 +494,14 @@ input[type="password"]:focus {
 
 .form-input,
 .form-select {
+  width: 100%;
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
   background-color: white;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -505,6 +513,27 @@ input[type="password"]:focus {
 
 .form-input:invalid {
   border-color: #dc3545;
+}
+
+.form-static-value {
+  display: block;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f5f5f5;
+  color: #555;
+}
+
+.form-group--span2 {
+  grid-column: span 2;
+}
+
+.form-group--center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 /* Estilos mejorados para tabla de contratos */
@@ -723,6 +752,7 @@ input[type="password"]:focus {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 10px;
   margin-bottom: 30px;
+  align-items: center;
 }
 
 /* Grid del formulario */
@@ -731,7 +761,7 @@ input[type="password"]:focus {
   grid-template-columns: repeat(auto-fit, minmax(100px, 510px));
   margin-bottom: 30px;
   justify-items: center;
-  vertical-align: middle;
+  align-items: center;
 }
 .form-gridcenter label {
   display: block;
@@ -935,7 +965,7 @@ a.crear-usuario-link:hover {
   display: flex;
   gap: 15px;
   justify-content: center;
-  margin-top: 40px;
+  margin-top: 0;
 }
 
 /* ===== TABLAS ===== */
@@ -1396,6 +1426,7 @@ a.crear-usuario-link:hover {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  margin: 0 auto;
 }
 
 .login-form {
@@ -1469,27 +1500,244 @@ a.crear-usuario-link:hover {
 }
 
 .form-layout-header-main .content-header {
+  width: 100%;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.puestos-header-main .content-header,
-.contratos-header-main .content-header {
-  max-width: 1130px;
+/* ===== ALINEACIÓN CABECERA CON COLUMNA DEL FORMULARIO =====
+   Replica el mismo grid que .content-with-help para que el h1
+   y el párrafo se centren sobre la columna del formulario
+   en lugar de sobre el conjunto formulario + panel de ayuda.   */
+
+/* Pantallas con panel de ayuda de 250 px (wide-form e identidades) */
+main:has(.wide-form-content-body) .content-header,
+main:has(.identidades-content-body) .content-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px; /* 250 px panel + 20 px gap */
+  gap: 20px;
 }
 
-.identidades-header-main .content-header {
-  max-width: 1130px;
+main:has(.wide-form-content-body) .content-header > *,
+main:has(.identidades-content-body) .content-header > * {
+  grid-column: 1;
+}
+
+/* Pantallas con panel de ayuda de 300 px (simulación de retribuciones) */
+main:has(.content-with-help):not(:has(.wide-form-content-body)):not(:has(.identidades-content-body)) .content-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px; /* 300 px panel + 20 px gap */
+  gap: 20px;
+}
+
+main:has(.content-with-help):not(:has(.wide-form-content-body)):not(:has(.identidades-content-body)) .content-header > * {
+  grid-column: 1;
 }
 
 @media (max-width: 1100px) {
-  .puestos-header-main .content-header,
-  .contratos-header-main .content-header {
-    max-width: 1400px;
+  main:has(.content-with-help) .content-header {
+    display: block;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE MÓVIL (≤ 768 px)
+   – El sidebar lateral se convierte en una barra de
+     navegación horizontal en la parte superior.
+   – El contenido ocupa el 100 % del ancho restante.
+   – La presentación en PC no se ve afectada.
+   ===================================================== */
+@media (max-width: 768px) {
+
+  /* ── Layout general ── */
+  .main-container {
+    flex-direction: column;
+    height: 100vh;
   }
 
-  .identidades-header-main .content-header {
-    max-width: 1400px;
+  /* ── Sidebar → top nav bar ── */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: stretch;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-header {
+    padding: 8px 14px;
+    border-bottom: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .sidebar-header h2 {
+    font-size: 0.95rem;
+  }
+
+  /* Ocultar selector de docente (muy ancho para la barra horizontal) */
+  .sidebar-header-user {
+    display: none;
+  }
+
+  /* Menú horizontal con scroll si hay muchos ítems */
+  .menu-list {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .menu-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-item {
+    flex-shrink: 0;
+  }
+
+  .menu-button {
+    padding: 6px 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    height: 100%;
+  }
+
+  .menu-button:hover:not(.disabled) {
+    transform: none;
+  }
+
+  .menu-icon {
+    margin-right: 0;
+    font-size: 1.2rem;
+    width: auto;
+  }
+
+  .menu-text {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+
+  /* ── Área de usuario: compacta al final de la barra ──
+     Solo se muestran los iconos de acción (sin texto ni nombre).      */
+  .user-area {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 0;
+    padding: 0 6px;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    background: none;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  /* Ocultar nombre de usuario */
+  .user-area > .persona-info {
+    display: none;
+  }
+
+  .user-area .user-actions {
+    margin-top: 0;
+  }
+
+  /* Mostrar solo el icono en los botones del área de usuario */
+  .user-area .change-password-btn .btn-text,
+  .user-area .menu-button .menu-text {
+    display: none;
+  }
+
+  .user-area .change-password-btn {
+    width: auto;
+    padding: 6px 8px;
+    font-size: 1.1rem;
+    justify-content: center;
+  }
+
+  .user-area .menu-button {
+    padding: 6px 8px;
+    min-width: unset;
+  }
+
+  /* ── Contenido principal ── */
+  .main-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 12px 24px;
+  }
+
+  /* ── Cabecera de página ── */
+  .content-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .content-header p {
+    font-size: 0.9rem;
+  }
+
+  /* Colapsar grid del content-header en TODAS las variantes de pantalla.
+     Se usan los mismos selectores de alta especificidad que los crean
+     para garantizar que el override prevalezca. */
+  main:has(.wide-form-content-body) .content-header,
+  main:has(.identidades-content-body) .content-header,
+  main:has(.content-with-help):not(:has(.wide-form-content-body)):not(:has(.identidades-content-body)) .content-header {
+    display: block;
+  }
+
+  /* Colapsar grid del content-with-help para variantes específicas.
+     NECESARIO: las reglas minmax(0,1fr) 250px de wide-form e identidades
+     están definidas DESPUÉS del @media 1100px en el CSS, por lo que la
+     regla sin media query gana en cascada. Este bloque (que viene al
+     final del archivo) lo corrige de forma definitiva en móvil. */
+  .wide-form-content-body .content-with-help,
+  .identidades-content-body .content-with-help {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Formularios ── */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group--span2 {
+    grid-column: span 1;
+  }
+
+  .form-group-inline {
+    grid-template-columns: 1fr;
+  }
+
+  /* Botones: apilados si no caben en una línea */
+  .form-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .form-actions .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    margin-right: 0;
+  }
+
+  /* ── Panel de ayuda: siempre estático y separado del formulario ── */
+  .help-panel {
+    margin-top: 16px;
+    position: static;
   }
 }
 
@@ -1721,6 +1969,7 @@ a.crear-usuario-link:hover {
   margin-bottom: 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
 }
 
@@ -2831,6 +3080,13 @@ a.crear-usuario-link:hover {
   transform: translateX(-3px);
 }
 
+.btn-back-icon {
+  width: auto;
+  height: 2.5rem;
+  display: block;
+  transition: transform 0.15s;
+}
+
 .filter-section {
   background: #f8f9ff;
   border: 1px solid #d0d8ff;
@@ -2866,6 +3122,7 @@ a.crear-usuario-link:hover {
   font-size: 0.82rem;
   font-weight: 600;
   color: #555;
+  text-align: center;
 }
 
 .filter-group .form-select {

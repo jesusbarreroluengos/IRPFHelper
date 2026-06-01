@@ -6,6 +6,7 @@ import { AuthService } from '../auth.service';
 import { PersonaSimulada } from '../services/persona-simulada.service';
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { TablasMaestrasService, TaSexenio, Comunidad } from '../services/tablas-maestras.service';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 
 interface AyudaContextual { titulo: string; descripcion: string; puntos?: string[]; }
 
@@ -67,7 +68,8 @@ export class AdminSexenioComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private personaSelectionService: PersonaSimuladaSelectionService,
-    private service: TablasMaestrasService
+    private service: TablasMaestrasService,
+    private confirmDialogService: ConfirmDialogService
   ) {}
 
   ngOnInit(): void {
@@ -117,8 +119,8 @@ export class AdminSexenioComponent implements OnInit {
       error: err => this.mostrarError(err.error || 'Error al modificar el registro')
     });
   }
-  eliminar(r: TaSexenio): void {
-    if (!confirm(`¿Desea eliminar el registro?`)) return;
+  async eliminar(r: TaSexenio): Promise<void> {
+    if (!await this.confirmDialogService.confirm(`¿Desea eliminar el registro del año ${r.anio}?`)) return;
     this.service.deleteSexenio(r.anio, r.numSexenio, r.idComunidad).subscribe({
       next: () => { this.mostrarExito('Registro eliminado correctamente'); this.cargarDatos(); },
       error: () => this.mostrarError('Error al eliminar el registro')

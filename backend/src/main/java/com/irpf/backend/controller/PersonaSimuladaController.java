@@ -2,12 +2,19 @@ package com.irpf.backend.controller;
 
 import com.irpf.backend.model.ApiResponse;
 import com.irpf.backend.entidades.PersonaSimulada;
+import com.irpf.backend.repository.AscendienteRepository;
+import com.irpf.backend.repository.CalculoIrpfRepository;
+import com.irpf.backend.repository.ContratoPersonaRepository;
+import com.irpf.backend.repository.DescendienteRepository;
 import com.irpf.backend.repository.PersonaSimuladaRepository;
+import com.irpf.backend.repository.PuestoTipoRepository;
+import com.irpf.backend.repository.SimulacionRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -17,13 +24,30 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/personas-simuladas")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class PersonaSimuladaController {
 
     private static final Logger auditLogger = LogManager.getLogger("BACKEND_AUDIT");
 
     @Autowired
     private PersonaSimuladaRepository personaSimuladaRepository;
+
+    @Autowired
+    private DescendienteRepository descendienteRepository;
+
+    @Autowired
+    private AscendienteRepository ascendienteRepository;
+
+    @Autowired
+    private ContratoPersonaRepository contratoPersonaRepository;
+
+    @Autowired
+    private PuestoTipoRepository puestoTipoRepository;
+
+    @Autowired
+    private SimulacionRepository simulacionRepository;
+
+    @Autowired
+    private CalculoIrpfRepository calculoIrpfRepository;
 
     /**
      * Obtener todas las personas simuladas
@@ -268,8 +292,9 @@ public class PersonaSimuladaController {
     }
 
     /**
-     * Eliminar una persona simulada
+     * Eliminar una persona simulada y todos sus datos asociados en cascada
      */
+    @Transactional
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse> deletePersonaSimulada(@PathVariable Long id) {
         try {
@@ -280,6 +305,15 @@ public class PersonaSimuladaController {
             }
 
             PersonaSimulada persona = personaOpt.get();
+
+            // Borrar registros hijo en orden para respetar las FK
+            calculoIrpfRepository.deleteAll(calculoIrpfRepository.findByIdPersona(id));
+            simulacionRepository.deleteAll(simulacionRepository.findByIdPersona(id));
+            contratoPersonaRepository.deleteAll(contratoPersonaRepository.findByIdPersonaOrderByFechaDesdeAsc(id));
+            descendienteRepository.deleteAll(descendienteRepository.findByIdPersona(id));
+            ascendienteRepository.deleteAll(ascendienteRepository.findByIdPersona(id));
+            puestoTipoRepository.deleteAll(puestoTipoRepository.findByIdPersonaOrderByNomPuestoAsc(id));
+
             personaSimuladaRepository.deleteById(id);
             auditLogger.info("ELIMINAR_DOCENTE | idPersona={} | nombre={}", id, persona.getNombre());
             return ResponseEntity.ok(new ApiResponse(true, "Persona simulada eliminada exitosamente"));

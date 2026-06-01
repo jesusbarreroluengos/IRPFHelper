@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { AuthService } from '../auth.service';
-import { PersonaSimulada, PersonaSimuladaService } from '../services/persona-simulada.service';
+import { Comunidad, PersonaSimulada, PersonaSimuladaService } from '../services/persona-simulada.service';
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { PuestoTipo, PuestoTipoService } from '../services/puesto-tipo.service';
 import { ContratoPersona, ContratoPersonaService, ApiResponse as ContratoApiResponse } from '../services/contrato-persona.service';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 import { finalize } from 'rxjs/operators';
 
 type Vista = 'lista' | 'form';
@@ -41,6 +42,7 @@ export class ContratosComponent implements OnInit {
   canSwitchDocente = false;
   puestos: PuestoTipo[] = [];
   contratos: ContratoPersona[] = [];
+  comunidades: Comunidad[] = [];
 
   vista: Vista = 'lista';
   modoAlta = true;
@@ -93,7 +95,8 @@ export class ContratosComponent implements OnInit {
     private personaSimuladaService: PersonaSimuladaService,
     private personaSelectionService: PersonaSimuladaSelectionService,
     private puestoTipoService: PuestoTipoService,
-    private contratoPersonaService: ContratoPersonaService
+    private contratoPersonaService: ContratoPersonaService,
+    private confirmDialogService: ConfirmDialogService
   ) {}
 
   /**
@@ -105,6 +108,7 @@ export class ContratosComponent implements OnInit {
     this.usernameFormatted = this.formatCamelCase(this.currentUsername || '');  
     this.updateMenuItems();
     this.actualizarDisponibilidadCambioDocente();
+    this.cargarComunidades();
     this.suscribirseAPersonaSeleccionada();
     this.cargarPersonaPorDefectoSiNecesario();
   }
@@ -316,9 +320,9 @@ export class ContratosComponent implements OnInit {
   /**
    * Elimina el contrato seleccionado actualmente en la vista.
    */
-  eliminar(): void {
+  async eliminar(): Promise<void> {
     if (!this.contratoEditandoId) return;
-    const confirmar = confirm('¿Seguro que desea eliminar este contrato?');
+    const confirmar = await this.confirmDialogService.confirm('¿Seguro que desea eliminar este contrato?');
     if (!confirmar) return;
     this.cargando = true;
     this.contratoPersonaService.deleteContrato(this.contratoEditandoId)
@@ -374,6 +378,25 @@ export class ContratosComponent implements OnInit {
     if (!idPuestoTipo) return '';
     const puesto = this.puestos.find(p => p.idPuestoTipo === idPuestoTipo);
     return puesto?.nomPuesto || '';
+  }
+
+  getComunidadPuesto(idPuestoTipo: number | null | undefined): string {
+    if (!idPuestoTipo) return '';
+    const puesto = this.puestos.find(p => p.idPuestoTipo === idPuestoTipo);
+    if (!puesto?.idComunidad) return '';
+    const comunidad = this.comunidades.find(c => c.idComunidad === puesto.idComunidad);
+    return comunidad?.descComunidad || '';
+  }
+
+  private cargarComunidades(): void {
+    this.personaSimuladaService.getComunidades().subscribe({
+      next: comunidades => {
+        this.comunidades = comunidades || [];
+      },
+      error: () => {
+        this.comunidades = [];
+      }
+    });
   }
 
   tienePuestos(): boolean {

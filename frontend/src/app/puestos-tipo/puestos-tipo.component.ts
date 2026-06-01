@@ -2,10 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { AuthService } from '../auth.service';
 import { Comunidad, PersonaSimulada, PersonaSimuladaService } from '../services/persona-simulada.service';
 import { PersonaSimuladaSelectionService } from '../services/persona-simulada-selection.service';
 import { ApiResponse, Estudio, Jornada, PuestoTipo, PuestoTipoService } from '../services/puesto-tipo.service';
+import { ContratoPersonaService } from '../services/contrato-persona.service';
+import { ConfirmDialogService } from '../services/confirm-dialog.service';
 
 interface AyudaContextual {
   titulo: string;
@@ -64,6 +68,9 @@ export class PuestosTipoComponent implements OnInit {
 
   trienios = Array.from({ length: 16 }, (_, i) => i);
   sexenios = Array.from({ length: 6 }, (_, i) => i);
+
+  ejercicioSeleccionado: number = new Date().getFullYear();
+  readonly ejercicios: number[] = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - i);
 
   formulario: Partial<PuestoTipo> = this.obtenerFormularioVacio();
   importeEspecificoTabla: number | null = null;
@@ -169,7 +176,9 @@ export class PuestosTipoComponent implements OnInit {
     private router: Router,
     private personaSimuladaService: PersonaSimuladaService,
     private personaSelectionService: PersonaSimuladaSelectionService,
-    private puestoTipoService: PuestoTipoService
+    private puestoTipoService: PuestoTipoService,
+    private contratoPersonaService: ContratoPersonaService,
+    private confirmDialogService: ConfirmDialogService
   ) {}
 
   /**
@@ -187,6 +196,11 @@ export class PuestosTipoComponent implements OnInit {
     this.suscribirseAPersonaSeleccionada();
     this.cargarPersonaPorDefectoSiNecesario();
     this.cargarEspecificoTabla(this.formulario.codEstudio || 'P');
+  }
+
+  onCambioEjercicio(): void {
+    this.cargarEspecificoTabla(this.formulario.codEstudio || 'P');
+    this.recalcularImportesDetalle();
   }
 
   /**
@@ -461,11 +475,23 @@ export class PuestosTipoComponent implements OnInit {
   /**
    * Elimina el puesto actualmente seleccionado en la vista.
    */
-  eliminar(): void {
+  async eliminar(): Promise<void> {
     if (!this.puestoSeleccionadoId) return;
-    if (!confirm('¿Seguro que desea eliminar este puesto tipo?')) return;
+    if (!await this.confirmDialogService.confirm('¿Seguro que desea eliminar este puesto tipo? Se eliminarán también todos los contratos asociados a él.')) return;
     this.cargando = true;
-    this.puestoTipoService.deletePuesto(this.puestoSeleccionadoId).subscribe({
+    const idPuesto = this.puestoSeleccionadoId;
+    const idPersona = this.personaSeleccionada?.idPersona;
+    const borrarContratosYPuesto$ = idPersona
+      ? this.contratoPersonaService.getContratosByPersona(idPersona).pipe(
+          switchMap(contratos => {
+            const asociados = (contratos || []).filter(c => c.idPuestoTipo === idPuesto);
+            const deletes$ = asociados.map(c => this.contratoPersonaService.deleteContrato(c.idContratoPersona!));
+            return deletes$.length > 0 ? forkJoin(deletes$) : of([]);
+          }),
+          switchMap(() => this.puestoTipoService.deletePuesto(idPuesto))
+        )
+      : this.puestoTipoService.deletePuesto(idPuesto);
+    borrarContratosYPuesto$.subscribe({
       next: (resp: ApiResponse) => {
         if (resp.success) {
           this.mostrarMensajeExito(resp.message);
@@ -573,7 +599,7 @@ export class PuestosTipoComponent implements OnInit {
    * Construye el payload mínimo necesario para invocar los cálculos del backend.
    * @returns Objeto parcial de puesto con los datos relevantes para el cálculo.
    */
-  private construirPayloadCalculo(): Partial<PuestoTipo> {
+  private construirPayloadCalculo(): Partial<PuestoTipo> & { ejercicio?: number } {
     return {
       ...this.formulario,
       idPersona: this.personaSeleccionada?.idPersona ?? 0,
@@ -583,7 +609,8 @@ export class PuestosTipoComponent implements OnInit {
       numSexenios: Number(this.formulario.numSexenios ?? 0),
       importeEspecDocente: this.toNumberOrZero(this.formulario.importeEspecDocente),
       importeOtrosAbonosMes: this.toNumberOrZero(this.formulario.importeOtrosAbonosMes),
-      idComunidad: Number(this.formulario.idComunidad ?? this.obtenerIdComunidadPorDefecto())
+      idComunidad: Number(this.formulario.idComunidad ?? this.obtenerIdComunidadPorDefecto()),
+      ejercicio: this.ejercicioSeleccionado
     };
   }
 
@@ -662,7 +689,8 @@ export class PuestosTipoComponent implements OnInit {
   private cargarEspecificoTabla(codEstudio: string): void {
     this.puestoTipoService.getImporteEspecifico(
       codEstudio,
-      Number(this.formulario.idComunidad ?? this.obtenerIdComunidadPorDefecto())
+      Number(this.formulario.idComunidad ?? this.obtenerIdComunidadPorDefecto()),
+      this.ejercicioSeleccionado
     ).subscribe({
       next: (resp) => {
         if (resp.success && resp.data !== undefined) {

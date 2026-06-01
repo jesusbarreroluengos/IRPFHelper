@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Ficheros con credenciales locales (no subir al repositorio)
+src/main/resources/application-alwaysdata.properties
+
 ### STS ###
 .apt_generated
 .classpath

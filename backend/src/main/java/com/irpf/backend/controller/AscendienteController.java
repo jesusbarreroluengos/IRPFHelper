@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ascendientes")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AscendienteController {
 
     @Autowired

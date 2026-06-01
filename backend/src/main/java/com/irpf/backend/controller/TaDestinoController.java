@@ -18,7 +18,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/admin/destino")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class TaDestinoController {
 
     @Autowired
